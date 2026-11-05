@@ -1,1 +1,1077 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Área · Edificaciones · AyA</title>
+<style>
+:root {
+  --aya-azul: #1B294E;
+  --aya-dorado: #C9AD6E;
+  --aya-fondo-claro: #F5F6FA;
+  --aya-blanco: #FFFFFF;
+  --aya-peligro: #c0392b;
+  --aya-exito: #27ae60;
+  --aya-azul-medio: #3A4A70;
+  --aya-dorado-oscuro: #8B7338;
+  --aya-gris-texto: #5B678A;
+  --aya-gris-suave: #94A0BD;
+  --aya-borde: rgba(27,41,78,.14);
+  --aya-borde-fuerte: rgba(27,41,78,.24);
+  --aya-tinte-dorado: rgba(201,173,110,.18);
+  --aya-dorado-claro: #DEC584;
+}
+* { box-sizing: border-box; }
+body { margin:0; font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background:var(--aya-fondo-claro); color:var(--aya-azul); }
 
+header { background:var(--aya-azul); color:var(--aya-blanco); display:flex; align-items:center; gap:20px; padding:12px 24px; border-bottom:3px solid var(--aya-dorado); flex-wrap:wrap; }
+header img.logo { height:55px; display:block; flex-shrink:0; }
+header .titulos h1 { margin:0; font-size:1.5rem; letter-spacing:1px; color:var(--aya-blanco); }
+header .titulos h2 { margin:2px 0 0; font-size:0.95rem; font-weight:400; opacity:0.92; }
+header .titulos h3 { margin:2px 0 0; font-size:0.78rem; font-weight:300; opacity:0.75; }
+header .titulo-derecha { margin-left:auto; font-size:1.2rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--aya-dorado); padding-left:20px; border-left:2px solid var(--aya-dorado); white-space:nowrap; }
+@media (max-width:700px) { header .titulo-derecha { margin-left:0; width:100%; border-left:none; border-top:2px solid var(--aya-dorado); padding-left:0; padding-top:8px; text-align:right; font-size:1rem; } }
+
+main { padding: 18px 24px 30px; max-width: 1400px; margin: 0 auto; }
+.subtitulo { color: var(--aya-gris-texto); font-size: 0.88rem; margin: 0 0 16px; line-height: 1.45; }
+.subtitulo b { color: var(--aya-azul); }
+.layout { display: grid; grid-template-columns: 1fr 1.15fr; gap: 20px; align-items: start; }
+@media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
+
+.card { background: var(--aya-blanco); border: 1px solid var(--aya-borde); border-radius: 10px; border-top: 3px solid var(--aya-dorado); padding: 16px 18px; box-shadow: 0 1px 4px rgba(27,41,78,.06); margin-bottom: 18px; }
+.card h2 { margin: 0 0 14px; font-size: 1.02rem; color: var(--aya-azul); display: flex; align-items: center; gap: 10px; }
+.card h2 .num { background: var(--aya-azul); color: var(--aya-blanco); width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.82rem; flex-shrink: 0; }
+
+.campo { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.campo > label { font-weight: 600; color: var(--aya-gris-texto); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.campo > label .hint { font-weight: 400; color: var(--aya-gris-suave); text-transform: none; letter-spacing: 0; font-size: 0.7rem; }
+.campo input[type="number"], .campo input[type="text"], .campo select { border: 1px solid var(--aya-borde-fuerte); border-radius: 5px; padding: 7px 9px; font-size: 0.92rem; font-family: inherit; background: var(--aya-fondo-claro); color: var(--aya-azul); width: 100%; }
+.campo input:focus, .campo select:focus { outline: none; border-color: var(--aya-dorado); background: var(--aya-blanco); }
+.sub-label { font-size: 0.68rem; color: var(--aya-gris-suave); font-style: italic; margin-top: -2px; display: block; }
+
+.campo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.campo-row.c3 { grid-template-columns: 1fr 1fr 1fr; }
+.campo-row.c4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+@media (max-width: 900px) { .campo-row.c4 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .campo-row, .campo-row.c3, .campo-row.c4 { grid-template-columns: 1fr; } }
+
+.check-inline { display: flex !important; align-items: center; gap: 8px; font-size: 0.85rem !important; font-weight: 600 !important; color: var(--aya-azul) !important; text-transform: none !important; letter-spacing: 0 !important; cursor: pointer; padding: 6px 0; margin: 4px 0; }
+.check-inline input { accent-color: var(--aya-azul); width: 18px; height: 18px; }
+
+.nota { font-size: 0.78rem; color: var(--aya-gris-texto); background: var(--aya-tinte-dorado); border-left: 3px solid var(--aya-dorado); padding: 8px 12px; border-radius: 5px; margin: 4px 0 10px; line-height: 1.45; }
+.nota b { color: var(--aya-dorado-oscuro); }
+
+.resumen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+@media (max-width: 500px) { .resumen-grid { grid-template-columns: 1fr; } }
+.kpi { background: var(--aya-fondo-claro); border: 1px solid var(--aya-borde); border-radius: 8px; padding: 12px 14px; }
+.kpi .label { font-size: 0.72rem; color: var(--aya-gris-texto); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; margin-bottom: 4px; }
+.kpi .value { font-size: 1.5rem; font-weight: 700; color: var(--aya-azul); line-height: 1.1; }
+.kpi .value small { font-size: 0.75rem; font-weight: 500; color: var(--aya-gris-texto); }
+.kpi.destacado { background: var(--aya-azul); border-color: var(--aya-azul); }
+.kpi.destacado .label { color: var(--aya-dorado); }
+.kpi.destacado .value { color: var(--aya-blanco); }
+.kpi.destacado .value small { color: var(--aya-dorado-claro); }
+
+table.resultados { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+table.resultados th { text-align: left; padding: 8px 6px; background: var(--aya-azul); color: var(--aya-blanco); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.5px; }
+table.resultados th:nth-child(2), table.resultados th:last-child { text-align: center; }
+table.resultados td { padding: 8px 6px; border-bottom: 1px solid var(--aya-borde); vertical-align: top; }
+table.resultados td.cant { text-align: center; font-weight: 700; color: var(--aya-azul); font-variant-numeric: tabular-nums; }
+table.resultados td.desc { color: var(--aya-gris-texto); font-size: 0.78rem; }
+table.resultados td:last-child { text-align: right; font-weight: 600; }
+table.resultados tr.seccion td { background: var(--aya-tinte-dorado); font-weight: 700; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.8px; color: var(--aya-azul); }
+table.resultados tr.total td { background: var(--aya-azul); color: var(--aya-blanco); font-weight: 700; font-size: 0.95rem; border: none; }
+table.resultados tr.total td:last-child { font-size: 1.05rem; color: var(--aya-dorado-claro); }
+table.resultados tr.mobiliario td { font-size: 0.8rem; color: var(--aya-azul); background: #FAFBFD; }
+
+.acciones { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+button.btn-azul { background: var(--aya-azul); color: var(--aya-blanco); border: none; padding: 9px 16px; border-radius: 6px; font-size: 0.88rem; cursor: pointer; transition: background 0.2s; font-family: inherit; }
+button.btn-azul:hover { background: var(--aya-azul-medio); }
+button.btn-gris { background: var(--aya-gris-suave); color: var(--aya-blanco); border: none; padding: 9px 16px; border-radius: 6px; font-size: 0.88rem; cursor: pointer; font-family: inherit; }
+button.btn-gris:hover { background: var(--aya-gris-texto); }
+button.btn-dorado { background: var(--aya-dorado); color: var(--aya-azul); border: none; padding: 9px 16px; border-radius: 6px; font-size: 0.88rem; cursor: pointer; font-weight: 600; font-family: inherit; }
+button.btn-dorado:hover { background: var(--aya-dorado-oscuro); color: var(--aya-blanco); }
+
+.elaborado-grupo { margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.elaborado-grupo label { font-weight:600; color:var(--aya-gris-texto); text-transform:uppercase; font-size:0.72rem; letter-spacing:0.5px; white-space:nowrap; }
+.elaborado-grupo input { border:1px solid var(--aya-borde-fuerte); border-radius:5px; padding:7px 9px; font-size:0.88rem; font-family:inherit; background:var(--aya-fondo-claro); color:var(--aya-azul); min-width:180px; }
+.elaborado-grupo input:focus { outline:none; border-color:var(--aya-dorado); background:var(--aya-blanco); }
+
+.tabla-dinamica { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-bottom: 8px; }
+.tabla-dinamica th { background: var(--aya-fondo-claro); color: var(--aya-azul); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 4px; text-align: left; border-bottom: 1px solid var(--aya-borde-fuerte); font-weight: 700; }
+.tabla-dinamica td { padding: 4px 4px; border-bottom: 1px solid var(--aya-borde); vertical-align: middle; }
+.tabla-dinamica input { width: 100%; padding: 5px 7px; font-size: 0.8rem; border: 1px solid var(--aya-borde); border-radius: 4px; background: var(--aya-blanco); font-family: inherit; color: var(--aya-azul); }
+.tabla-dinamica input:focus { outline: none; border-color: var(--aya-dorado); background: #FFFDF6; }
+.tabla-dinamica .total-celda { font-weight: 700; color: var(--aya-azul); text-align: right; font-variant-numeric: tabular-nums; padding: 4px 6px; }
+.tabla-dinamica .btn-eliminar { background: transparent; border: 1px solid var(--aya-peligro); color: var(--aya-peligro); width: 26px; height: 26px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; padding: 0; }
+.tabla-dinamica .btn-eliminar:hover { background: var(--aya-peligro); color: var(--aya-blanco); }
+.seccion-titulo-inline { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--aya-dorado-oscuro); font-weight: 700; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--aya-borde); }
+
+.modal-fondo { position: fixed; inset: 0; background: rgba(27,41,78,0.6); display: none; justify-content: center; align-items: flex-start; padding: 30px 15px; z-index: 1000; overflow-y: auto; }
+.modal-fondo.activo { display: flex; }
+.modal-print { background: var(--aya-blanco); border-radius: 10px; width: 100%; max-width: 640px; padding: 22px; box-shadow: 0 6px 24px rgba(27,41,78,0.3); border-top: 4px solid var(--aya-dorado); }
+.modal-print.preview { max-width: 950px; }
+.modal-print h2 { margin: 0 0 16px; font-size: 1.15rem; color: var(--aya-azul); display: flex; justify-content: space-between; align-items: center; }
+.modal-print h2 .cerrar { background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: var(--aya-gris-texto); }
+.modal-print .seccion-titulo { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--aya-dorado-oscuro); font-weight: 700; margin: 14px 0 8px; border-bottom: 1px solid var(--aya-borde); padding-bottom: 4px; }
+.modal-print .acciones { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+#iframePreview { width: 100%; height: 65vh; border: 1px solid var(--aya-borde-fuerte); border-radius: 6px; background: #fff; }
+
+footer { text-align:center; font-size:0.75rem; padding:10px; background: var(--aya-azul); color: var(--aya-gris-suave); border-top:2px solid var(--aya-dorado); margin-top: 20px; }
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <img class="logo" src="https://www.aya.go.cr/assets/img/96cb7f83-6325-4ee1-8e4e-fa1e21262be8.png" alt="Logo AyA">
+  <div class="titulos">
+    <h1>Calculadora de Área</h1>
+    <h2>Edificaciones · UEN Programación y Control</h2>
+    <h3>Instituto Costarricense de Acueductos y Alcantarillados</h3>
+  </div>
+  <div class="titulo-derecha">Espacio Arquitectónico</div>
+</header>
+
+<main>
+  <p class="subtitulo">
+    Ingrese la cantidad de ocupantes y requerimientos. La calculadora estima el área mínima según <b>CIHSE 2017</b>, <b>Ley 7600</b>, <b>Decreto 44943-MTSS-S</b> (lactancia), los criterios de ocupación institucionales y las <b>especificaciones de mobiliario AyA 2025</b>.
+  </p>
+
+  <div class="layout">
+    <!-- ENTRADAS -->
+    <div>
+      <div class="card">
+        <h2><span class="num">1</span> Ocupantes</h2>
+        <div class="campo-row c4">
+          <div class="campo">
+            <label>Plataforma <span class="hint">6 m²</span></label>
+            <input type="number" id="nPlataforma" min="0" value="0" oninput="calcular()">
+            <span class="sub-label">Ventanilla · 4.75×0.70</span>
+          </div>
+          <div class="campo">
+            <label>Estación de trabajo <span class="hint">8 m²</span></label>
+            <input type="number" id="nEstacion" min="0" value="0" oninput="calcular()">
+            <span class="sub-label">Escritorio recto · 1.50×0.60</span>
+          </div>
+          <div class="campo">
+            <label>Oficina <span class="hint">12 m²</span></label>
+            <input type="number" id="nOficina" min="0" value="0" oninput="calcular()">
+            <span class="sub-label">Escritorio L · 1.80×1.20</span>
+          </div>
+          <div class="campo">
+            <label>Recepción <span class="hint">10 m²</span></label>
+            <input type="number" id="nRecepcion" min="0" value="0" oninput="calcular()">
+            <span class="sub-label">Mueble L + mostrador</span>
+          </div>
+        </div>
+        <div class="campo-row">
+          <div class="campo">
+            <label>Visitantes simultáneos <span class="hint">espera · 1.4 m² c/u</span></label>
+            <input type="number" id="nVisitantes" min="0" value="0" oninput="calcular()">
+          </div>
+          <div class="campo">
+            <label>Número de pisos <span class="hint">TI y aseo por piso</span></label>
+            <input type="number" id="nPisos" min="1" value="1" oninput="calcular()">
+          </div>
+        </div>
+        <div class="campo-row">
+          <div class="campo">
+            <label>Funcionarias mujeres <span class="hint">para split SS y lactancia</span></label>
+            <input type="number" id="nMujeres" min="0" value="0" oninput="calcular()">
+          </div>
+          <div class="campo">
+            <label>Funcionarias en lactancia <span class="hint">1 sola ya obliga</span></label>
+            <input type="number" id="nLactancia" min="0" value="0" oninput="calcular()">
+          </div>
+        </div>
+        <div class="nota">
+          <b>Comedor:</b> capacidad = funcionarios / 2 tandas, redondeado a par superior. Incluye cocineta y mueble aéreo.<br>
+          <b>Lactancia materna:</b> espacio obligatorio cuando exista al menos una persona trabajadora en período de lactancia (Decreto Ejecutivo N.° 44943-MTSS-S, art. 1). Para edificaciones, aplicar también el Código de Instalaciones Hidráulicas y Sanitarias vigente, art. 5.1-3.<br>
+          <b>SS:</b> el campo "Funcionarias mujeres" define el split H/M del cálculo (si se deja en 0, se asume 50/50).
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="num">2</span> Salas de reunión</h2>
+        <div class="campo-row">
+          <div class="campo">
+            <label>Salas individuales (1 persona)</label>
+            <input type="number" id="nSalasInd" min="0" value="0" oninput="calcular()">
+          </div>
+          <div class="campo">
+            <label>Cantidad de salas grupales</label>
+            <input type="number" id="nSalasGrupCant" min="0" value="0" oninput="calcular()">
+          </div>
+        </div>
+        <div class="campo">
+          <label>Capacidad por sala grupal (personas)</label>
+          <input type="number" id="nSalasGrupCap" min="0" value="6" oninput="calcular()">
+        </div>
+        <div class="nota">Factor: 2.5 m² por asistente (mín. 4 m² por sala). Mesas de reunión según especificación (6, 8 o 10 personas).</div>
+      </div>
+
+      <div class="card">
+        <h2><span class="num">3</span> Complementos</h2>
+        <div class="campo-row">
+          <div class="campo">
+            <label>Vigilantes <span class="hint">4 m² c/u · ocupante</span></label>
+            <input type="number" id="nVigilancia" min="0" value="1" oninput="calcular()">
+          </div>
+          <div class="campo">
+            <label>Personal de limpieza <span class="hint">ocupante</span></label>
+            <input type="number" id="nLimpieza" min="0" value="0" oninput="calcular()">
+          </div>
+        </div>
+        <label class="check-inline"><input type="checkbox" id="chkEstac" onchange="toggleEstac(); calcular()"> Tiene estacionamiento</label>
+        <div class="campo-row">
+          <div class="campo">
+            <label>Institucional <span class="hint">12.5 m² c/u</span></label>
+            <input type="number" id="nEstacInst" min="0" value="0" oninput="calcular()" disabled style="opacity:.5">
+          </div>
+          <div class="campo">
+            <label>Visitantes <span class="hint">acc. máx(2, 5%) · solo visitantes</span></label>
+            <input type="number" id="nEstacVis" min="0" value="0" oninput="calcular()" disabled style="opacity:.5">
+          </div>
+        </div>
+        <label class="check-inline"><input type="checkbox" id="chkCentroComercial" onchange="calcular()"> Ubicado dentro de un centro comercial <span style="font-weight:400;font-size:0.75rem;color:var(--aya-gris-suave)">(exime SS Ley 7600)</span></label>
+      </div>
+
+      <div class="card">
+        <h2><span class="num">4</span> Especiales <span style="font-weight:400;font-size:0.75rem;color:var(--aya-gris-suave);text-transform:none;letter-spacing:0">· Áreas adicionales + usuarios + mobiliario</span></h2>
+        <table class="tabla-dinamica" id="tablaEspeciales">
+          <thead>
+            <tr>
+              <th style="width:22%">Nombre del área</th>
+              <th style="width:55px">Cant.</th>
+              <th style="width:20%">Detalle</th>
+              <th style="width:65px">m²/u</th>
+              <th style="width:65px">Usuarios</th>
+              <th style="width:60px">Total</th>
+              <th style="width:30px"></th>
+            </tr>
+          </thead>
+          <tbody id="tbodyEspeciales"></tbody>
+        </table>
+        <button type="button" class="btn-azul" onclick="addEspecial()">+ Agregar área especial</button>
+        <div class="nota" style="margin-top:10px">
+          El <b>total m²</b> se calcula automáticamente (<b>Cantidad × m²/unidad</b>) y se suma al área interior, afectada por circulación. Los <b>usuarios</b> de cada área especial se suman a ocupantes (recalculan SS, comedor y per-cápita).
+        </div>
+
+        <div class="seccion-titulo-inline">Mobiliario de áreas especiales</div>
+        <table class="tabla-dinamica" id="tablaMobEspeciales">
+          <thead>
+            <tr>
+              <th style="width:35%">Mueble</th>
+              <th style="width:40%">Dimensiones / tipo</th>
+              <th style="width:70px">Cant.</th>
+              <th style="width:30px"></th>
+            </tr>
+          </thead>
+          <tbody id="tbodyMobEspeciales"></tbody>
+        </table>
+        <button type="button" class="btn-azul" onclick="addMobEspecial()">+ Agregar mobiliario</button>
+      </div>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div>
+      <div class="card">
+        <h2><span class="num">∑</span> Resumen</h2>
+        <div class="resumen-grid">
+          <div class="kpi destacado">
+            <div class="label">Área total requerida</div>
+            <div class="value" id="kpiTotal">0 <small>m²</small></div>
+          </div>
+          <div class="kpi">
+            <div class="label">Ocupantes totales</div>
+            <div class="value" id="kpiOcupantes">0 <small>pers.</small></div>
+          </div>
+          <div class="kpi">
+            <div class="label">Área por persona</div>
+            <div class="value" id="kpiPerCapita">0 <small>m²/pers.</small></div>
+          </div>
+          <div class="kpi">
+            <div class="label">Funcionarios</div>
+            <div class="value" id="kpiFunc">0 <small>pers.</small></div>
+          </div>
+        </div>
+        <div class="acciones no-print">
+          <button class="btn-dorado" onclick="abrirModalImpresion()">🖨 Generar informe / PDF</button>
+          <button class="btn-gris" onclick="resetForm()">↺ Reiniciar</button>
+          <div class="elaborado-grupo">
+            <label for="elaboradoPor">Elaborado por:</label>
+            <input type="text" id="elaboradoPor" placeholder="Nombre completo" oninput="calcular()">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="num">≡</span> Desglose por área</h2>
+        <table class="resultados">
+          <thead>
+            <tr>
+              <th>Área</th>
+              <th style="width:60px">Cant.</th>
+              <th>Detalle</th>
+              <th>m²</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyResultados"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2><span class="num">🛋</span> Mobiliario estimado</h2>
+        <table class="resultados">
+          <thead>
+            <tr><th>Mueble</th><th>Dimensiones / tipo</th><th style="text-align:center">Cantidad</th></tr>
+          </thead>
+          <tbody id="tbodyMobiliario"></tbody>
+        </table>
+        <div class="nota" style="margin-top:12px">
+          Cantidades orientativas. Mesas de reunión según capacidad. Sillas ejecutivas = 1 por puesto (incluye vigilancia y usuarios especiales). Sillas simples acolchadas: 1 por plataforma, 2 por oficina. Módulos de espera agrupan 3 sillas.
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>Plataforma interna · Calculadora de Área · Edificaciones · AyA</footer>
+
+<!-- MODAL 1: Configuración de impresión -->
+<div class="modal-fondo" id="modalImpresion">
+  <div class="modal-print">
+    <h2>⚙ Configurar informe PDF <button class="cerrar" onclick="cerrarModalImpresion()">✕</button></h2>
+
+    <div class="seccion-titulo">Página</div>
+    <div class="campo-row c3">
+      <div class="campo">
+        <label>Orientación</label>
+        <select id="printOrientacion">
+          <option value="portrait">Vertical</option>
+          <option value="landscape" selected>Horizontal</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label>Tamaño</label>
+        <select id="printTamano">
+          <option value="letter">Carta</option>
+          <option value="legal">Oficio</option>
+          <option value="A4">A4</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label>Escala</label>
+        <select id="printEscala">
+          <option value="100">100%</option>
+          <option value="90" selected>90%</option>
+          <option value="80">80%</option>
+          <option value="70">70%</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="seccion-titulo">Márgenes</div>
+    <div class="campo-row">
+      <div class="campo">
+        <label>Preajuste</label>
+        <select id="printMargen">
+          <option value="normal" selected>Normal (15 mm)</option>
+          <option value="estrecho">Estrecho (8 mm)</option>
+          <option value="amplio">Amplio (25 mm)</option>
+          <option value="custom">Personalizado…</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label>Personalizado (mm)</label>
+        <input type="number" id="printMargenCustom" placeholder="ej. 12" min="0" max="50" disabled>
+      </div>
+    </div>
+
+    <div class="seccion-titulo">Secciones a incluir</div>
+    <label class="check-inline"><input type="checkbox" id="printDatos" checked> Datos de entrada</label>
+    <label class="check-inline"><input type="checkbox" id="printResumen" checked> Resumen ejecutivo (KPIs)</label>
+    <label class="check-inline"><input type="checkbox" id="printAreas" checked> Desglose detallado de áreas</label>
+    <label class="check-inline"><input type="checkbox" id="printMobiliario" checked> Mobiliario estimado</label>
+    <label class="check-inline"><input type="checkbox" id="printNotas" checked> Referencias legales y normativas</label>
+
+    <div class="acciones">
+      <button class="btn-gris" onclick="cerrarModalImpresion()">Cancelar</button>
+      <button class="btn-dorado" onclick="generarVistaPrevia()">👁 Vista previa</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 2: Vista previa -->
+<div class="modal-fondo" id="modalPreview">
+  <div class="modal-print preview">
+    <h2>📄 Vista previa del informe <button class="cerrar" onclick="cerrarPreview()">✕</button></h2>
+    <iframe id="iframePreview"></iframe>
+    <div class="acciones">
+      <button class="btn-gris" onclick="volverAConfig()">← Volver a configurar</button>
+      <button class="btn-dorado" onclick="imprimirDesdePreview()">🖨 Imprimir / Guardar PDF</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Helpers
+   ============================================================ */
+function fmt(n, d=1) {
+  if (!isFinite(n) || n === 0) return '0';
+  return n.toLocaleString('es-CR', { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+function fmtInt(n) { return n.toLocaleString('es-CR'); }
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function toggleEstac() {
+  const chk = document.getElementById('chkEstac').checked;
+  ['nEstacInst', 'nEstacVis'].forEach(id => {
+    const inp = document.getElementById(id);
+    inp.disabled = !chk;
+    inp.style.opacity = chk ? '1' : '.5';
+    if (!chk) inp.value = 0;
+  });
+}
+
+/* ============================================================
+   Filas dinámicas: Especiales
+   ============================================================ */
+function addEspecial() {
+  const tbody = document.getElementById('tbodyEspeciales');
+  const tr = document.createElement('tr');
+  tr.className = 'esp-row';
+  tr.innerHTML = `
+    <td><input type="text" class="esp-nombre" placeholder="Área"></td>
+    <td><input type="number" class="esp-cant" min="1" value="1" oninput="recalcularEspecial()"></td>
+    <td><input type="text" class="esp-det" placeholder="Detalle"></td>
+    <td><input type="number" class="esp-m2u" min="0" step="0.1" value="0" oninput="recalcularEspecial()"></td>
+    <td><input type="number" class="esp-usuarios" min="0" value="0" oninput="calcular()"></td>
+    <td class="total-celda esp-total">0</td>
+    <td><button type="button" class="btn-eliminar" onclick="this.closest('tr').remove(); recalcularEspecial()">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+  calcular();
+}
+function recalcularEspecial() {
+  document.querySelectorAll('#tbodyEspeciales .esp-row').forEach(row => {
+    const c = parseFloat(row.querySelector('.esp-cant').value) || 0;
+    const m = parseFloat(row.querySelector('.esp-m2u').value) || 0;
+    row.querySelector('.esp-total').textContent = (c * m).toFixed(1);
+  });
+  calcular();
+}
+function addMobEspecial() {
+  const tbody = document.getElementById('tbodyMobEspeciales');
+  const tr = document.createElement('tr');
+  tr.className = 'me-row';
+  tr.innerHTML = `
+    <td><input type="text" class="me-mueble" placeholder="Mueble"></td>
+    <td><input type="text" class="me-dim" placeholder="Dimensiones / tipo"></td>
+    <td><input type="number" class="me-cant" min="1" value="1" oninput="calcular()"></td>
+    <td><button type="button" class="btn-eliminar" onclick="this.closest('tr').remove(); calcular()">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+  calcular();
+}
+function leerEspeciales() {
+  const rows = document.querySelectorAll('#tbodyEspeciales .esp-row');
+  const res = [];
+  rows.forEach(row => {
+    const nombre = row.querySelector('.esp-nombre').value.trim();
+    const cant = parseInt(row.querySelector('.esp-cant').value, 10) || 0;
+    const det = row.querySelector('.esp-det').value.trim();
+    const m2u = parseFloat(row.querySelector('.esp-m2u').value) || 0;
+    const usuarios = parseInt(row.querySelector('.esp-usuarios').value, 10) || 0;
+    const total = cant * m2u;
+    if (total > 0 || usuarios > 0) {
+      res.push({ nombre: nombre || 'Área especial', cant, det, m2u, usuarios, total });
+    }
+  });
+  return res;
+}
+function leerMobEspeciales() {
+  const rows = document.querySelectorAll('#tbodyMobEspeciales .me-row');
+  const res = [];
+  rows.forEach(row => {
+    const mueble = row.querySelector('.me-mueble').value.trim();
+    const dim = row.querySelector('.me-dim').value.trim();
+    const cant = parseInt(row.querySelector('.me-cant').value, 10) || 0;
+    if (mueble && cant > 0) res.push({ mueble, dim: dim || '—', cant });
+  });
+  return res;
+}
+
+/* ============================================================
+   Cálculo SS
+   ============================================================ */
+function calcularSSFuncionarios(n, nMujeres) {
+  if (n <= 0) return { cant: 0, area: 0, detalle: '' };
+  if (n <= 15) return { cant: 1, area: 3.5, detalle: '1 SS unisex funcionarios (inodoro + lavatorio)' };
+
+  let H, M;
+  if (n <= 25)       { H = {i:2,l:1,m:1}; M = {i:3,l:1}; }
+  else if (n <= 40)  { H = {i:2,l:2,m:1}; M = {i:3,l:2}; }
+  else if (n <= 55)  { H = {i:3,l:3,m:2}; M = {i:4,l:3}; }
+  else {
+    let mujeres, hombres;
+    if (nMujeres > 0 && nMujeres <= n) {
+      mujeres = nMujeres;
+      hombres = n - mujeres;
+    } else {
+      hombres = Math.ceil(n/2);
+      mujeres = n - hombres;
+    }
+    H = {i:Math.ceil(hombres/20), l:Math.ceil(hombres/20), m:Math.ceil(hombres/20)};
+    M = {i:Math.ceil(mujeres/15), l:Math.ceil(mujeres/15)};
+  }
+
+  let splitTxt = '';
+  if (nMujeres > 0 && nMujeres <= n) {
+    const mujeres = nMujeres;
+    const hombres = n - mujeres;
+    H.i = Math.max(H.i, Math.ceil(hombres/20));
+    H.l = Math.max(H.l, Math.ceil(hombres/20));
+    H.m = Math.max(H.m, Math.ceil(hombres/30));
+    M.i = Math.max(M.i, Math.ceil(mujeres/15));
+    M.l = Math.max(M.l, Math.ceil(mujeres/15));
+    splitTxt = ` · ${hombres}H/${mujeres}M`;
+  }
+
+  const area = H.i*2.5 + H.l*1.5 + H.m*1.2 + M.i*2.5 + M.l*1.5;
+  return {
+    cant: 2, area,
+    detalle: `H: ${H.i} inod., ${H.l} lav., ${H.m} ming. | M: ${M.i} inod., ${M.l} lav.${splitTxt}`
+  };
+}
+
+function calcularSSVisitantes(n, tieneSS7600) {
+  if (n <= 0) return { cant: 0, area: 0, detalle: '' };
+  if (n <= 15) {
+    if (tieneSS7600) return { cant: 0, area: 0, detalle: 'Cubierto por SS Ley 7600 (unisex accesible)' };
+    return { cant: 1, area: 3.5, detalle: '1 SS unisex visitantes (inodoro + lavatorio)' };
+  }
+  let H, M;
+  if (n <= 200)      { H = {i:1,l:1,m:1}; M = {i:1,l:1}; }
+  else if (n <= 500) { H = {i:2,l:2,m:1}; M = {i:3,l:2}; }
+  else {
+    H = {i: Math.ceil(n/250), l: Math.ceil(n/250), m: Math.ceil(n/250)};
+    M = {i: Math.ceil(n/250), l: Math.ceil(n/250)};
+  }
+  if (tieneSS7600) {
+    M.i = Math.max(0, M.i - 1);
+    M.l = Math.max(0, M.l - 1);
+  }
+  const area = H.i*2.5 + H.l*1.5 + H.m*1.2 + M.i*2.5 + M.l*1.5;
+  const cantH = (H.i + H.m) > 0 ? 1 : 0;
+  const cantM = (M.i + M.l) > 0 ? 1 : 0;
+  const cant = cantH + cantM;
+  if (area <= 0) return { cant: 0, area: 0, detalle: 'Cubierto por SS Ley 7600' };
+  return {
+    cant, area,
+    detalle: `H: ${H.i} inod., ${H.l} lav., ${H.m} ming. | M: ${M.i} inod., ${M.l} lav.${tieneSS7600 ? ' (SS 7600 ya cubre 1 mixto)' : ''}`
+  };
+}
+
+/* ============================================================
+   Cálculo principal
+   ============================================================ */
+function recopilarDatos() {
+  const inp = {
+    nPlataforma: Math.max(0, +document.getElementById('nPlataforma').value || 0),
+    nEstacion:   Math.max(0, +document.getElementById('nEstacion').value   || 0),
+    nOficina:    Math.max(0, +document.getElementById('nOficina').value    || 0),
+    nRecepcion:  Math.max(0, +document.getElementById('nRecepcion').value  || 0),
+    nVisitantes: Math.max(0, +document.getElementById('nVisitantes').value || 0),
+    nPisos:      Math.max(1, +document.getElementById('nPisos').value      || 1),
+    nMujeres:    Math.max(0, +document.getElementById('nMujeres').value    || 0),
+    nLactancia:  Math.max(0, +document.getElementById('nLactancia').value  || 0),
+    nSalasInd:   Math.max(0, +document.getElementById('nSalasInd').value   || 0),
+    nSalasGrupCant: Math.max(0, +document.getElementById('nSalasGrupCant').value || 0),
+    nSalasGrupCap:  Math.max(0, +document.getElementById('nSalasGrupCap').value  || 0),
+    nVigilancia: Math.max(0, +document.getElementById('nVigilancia').value || 0),
+    nLimpieza:   Math.max(0, +document.getElementById('nLimpieza').value   || 0),
+    nEstacInst:  Math.max(0, +document.getElementById('nEstacInst').value  || 0),
+    nEstacVis:   Math.max(0, +document.getElementById('nEstacVis').value   || 0),
+    chkEstac:    document.getElementById('chkEstac').checked,
+    esCentroComercial: document.getElementById('chkCentroComercial').checked,
+    elaboradoPor: (document.getElementById('elaboradoPor').value || '').trim()
+  };
+  const especiales = leerEspeciales();
+  const mobEspeciales = leerMobEspeciales();
+
+  const nUsuariosEspeciales = especiales.reduce((s, e) => s + e.usuarios, 0);
+  const nFunc = inp.nPlataforma + inp.nEstacion + inp.nOficina + inp.nRecepcion + inp.nVigilancia + inp.nLimpieza + nUsuariosEspeciales;
+  const totalPersonas = nFunc + inp.nVisitantes;
+
+  /* Puestos */
+  const aPlataforma = inp.nPlataforma * 6;
+  const aEstacion   = inp.nEstacion * 8;
+  const aOficina    = inp.nOficina * 12;
+  const aRecepcion  = inp.nRecepcion * 10;
+  const aPuestos    = aPlataforma + aEstacion + aOficina + aRecepcion;
+
+  /* Espera */
+  const modulosEspera = inp.nVisitantes > 0 ? Math.ceil(inp.nVisitantes / 3) : 0;
+  const aEspera = inp.nVisitantes * 1.4;
+
+  /* Comedor */
+  const capComedor = nFunc > 0 ? Math.ceil(nFunc / 2) * 2 : 0;
+  const aComedor   = capComedor * 1.4 * 1.15;
+  const aCocineta  = capComedor > 0 ? 4 : 0;
+
+  /* Lactancia */
+  const triggerLactanciaDecreto = inp.nLactancia > 0;
+  const triggerLactanciaCIHSE   = inp.nMujeres >= 30;
+  const lactanciaObligatoria    = triggerLactanciaDecreto || triggerLactanciaCIHSE;
+  const aLactancia = lactanciaObligatoria ? 9 : 0;
+
+  /* Reuniones */
+  const aSalaInd  = inp.nSalasInd * Math.max(4, 2.5);
+  const aSalaGrup = inp.nSalasGrupCant * Math.max(4, inp.nSalasGrupCap * 2.5);
+
+  /* SS */
+  const ssFunc = calcularSSFuncionarios(nFunc, inp.nMujeres);
+  const ssLey = inp.esCentroComercial
+    ? { cant: 0, area: 0, detalle: 'No aplica — el centro comercial cuenta con SS accesible' }
+    : { cant: 1, area: 5.5, detalle: '1 SS accesible (giro 1.5 m, barras, transferencia)' };
+  const ssVis = calcularSSVisitantes(inp.nVisitantes, !inp.esCentroComercial);
+  const aBanos = ssFunc.area + ssVis.area + ssLey.area;
+
+  /* TI, aseo, vigilancia */
+  const aTI = 3 * inp.nPisos;
+  const aAseo = 3 * inp.nPisos;
+  const aVigilancia = inp.nVigilancia * 4;
+
+  /* Especiales */
+  const aEspeciales = especiales.reduce((s, x) => s + x.total, 0);
+
+  /* Estacionamiento */
+  let aEstac = 0, estacAcc = 0, estacEstVis = 0;
+  const aEstacInst = inp.nEstacInst * 12.5 * 1.3;
+  let aEstacVis = 0;
+  if (inp.chkEstac && (inp.nEstacInst > 0 || inp.nEstacVis > 0)) {
+    if (inp.nEstacVis > 0) {
+      estacAcc = Math.min(inp.nEstacVis, Math.max(2, Math.ceil(inp.nEstacVis * 0.05)));
+      estacEstVis = Math.max(0, inp.nEstacVis - estacAcc);
+      aEstacVis = (estacAcc * 16.5 + estacEstVis * 12.5) * 1.3;
+    }
+    aEstac = aEstacInst + aEstacVis;
+  }
+
+  /* Totales */
+  const totalInterno = aPuestos + aEspera + aComedor + aCocineta + aLactancia + aSalaInd + aSalaGrup + aBanos + aTI + aAseo + aVigilancia + aEspeciales;
+  const circulacion  = totalInterno * 0.10;
+  const totalGeneral = totalInterno + circulacion + aEstac;
+  const perCapita = totalPersonas > 0 ? totalGeneral / totalPersonas : 0;
+
+  /* Filas */
+  const filas = [];
+  const sec = n => filas.push({ tipo:'seccion', nombre:n });
+  const fila = (area, cant, detalle, valor) => { if (valor > 0) filas.push({ tipo:'fila', area, cant, detalle, valor }); };
+
+  sec('Puestos de trabajo');
+  fila('Plataforma', inp.nPlataforma, 'Ventanilla 4.75×0.70 m · 6 m² c/u', aPlataforma);
+  fila('Estación de trabajo', inp.nEstacion, 'Escritorio recto 1.50×0.60 m · 8 m² c/u', aEstacion);
+  fila('Oficina', inp.nOficina, 'Escritorio L 1.80×1.20 + 0.80×0.60 m · 12 m² c/u', aOficina);
+  fila('Recepción', inp.nRecepcion, 'Mueble L 1.40×1.50 + mostrador · 10 m² c/u', aRecepcion);
+
+  if (aEspera > 0 || aComedor > 0 || aCocineta > 0 || aSalaInd > 0 || aSalaGrup > 0 || aLactancia > 0) {
+    sec('Áreas comunes');
+    fila('Sala de espera', inp.nVisitantes, `${modulosEspera} módulo(s) de 3 sillas · 1.4 m²/pers.`, aEspera);
+    fila('Comedor', capComedor, `${nFunc} funcionarios / 2 tandas → par sup. + 15% circulación`, aComedor);
+    fila('Cocineta (comedor)', capComedor > 0 ? 1 : 0, 'Mueble 2.60×0.60 m + circulación frontal', aCocineta);
+    fila('Salas de reunión individuales', inp.nSalasInd, 'Sala 1 persona · 4 m² mín.', aSalaInd);
+    fila('Salas de reunión grupales', inp.nSalasGrupCant, `${inp.nSalasGrupCap} pers./sala · 2.5 m² c/u`, aSalaGrup);
+    let detLact = '';
+    if (lactanciaObligatoria) {
+      const triggers = [];
+      if (triggerLactanciaDecreto) triggers.push(`${inp.nLactancia} en período (Decreto 44943)`);
+      if (triggerLactanciaCIHSE) triggers.push(`${inp.nMujeres} mujeres ≥30 (CIHSE 5.1-3)`);
+      detLact = triggers.join(' · ');
+    }
+    fila('Sala de lactancia', lactanciaObligatoria ? 1 : 0, detLact, aLactancia);
+  }
+
+  sec('Servicios sanitarios');
+  if (ssFunc.cant > 0) fila('SS Funcionarios', ssFunc.cant, ssFunc.detalle, ssFunc.area);
+  if (ssVis.cant > 0)  fila('SS Visitantes',  ssVis.cant,  ssVis.detalle,  ssVis.area);
+  fila('SS Ley 7600', ssLey.cant, ssLey.detalle, ssLey.area);
+
+  sec('Apoyo y técnico');
+  fila('Cuarto de TI', inp.nPisos, '3 m² × piso', aTI);
+  fila('Cuarto de aseo', inp.nPisos, '3 m² × piso', aAseo);
+  if (aVigilancia > 0) fila('Vigilancia', inp.nVigilancia, `${inp.nVigilancia} escritorio(s) · 4 m² c/u`, aVigilancia);
+
+  if (especiales.length > 0) {
+    sec('Especiales (manuales)');
+    especiales.forEach(e => {
+      const partes = [];
+      if (e.det) partes.push(e.det);
+      if (e.m2u > 0) partes.push(`${fmt(e.m2u,1)} m²/u`);
+      if (e.usuarios > 0) partes.push(`${e.usuarios} usuario(s)`);
+      filas.push({ tipo:'fila', area: e.nombre, cant: e.cant, detalle: partes.join(' · '), valor: e.total });
+    });
+  }
+
+  if (aEstac > 0) {
+    sec('Estacionamiento (exterior)');
+    if (inp.nEstacInst > 0) {
+      fila('Institucional', inp.nEstacInst, `${inp.nEstacInst} estándar × 12.5 m² · +30% circulación`, aEstacInst);
+    }
+    if (inp.nEstacVis > 0) {
+      fila('Visitantes', inp.nEstacVis, `${estacAcc} accesible(s) × 16.5 m² + ${estacEstVis} estándar × 12.5 m² · +30% circulación`, aEstacVis);
+    }
+  }
+
+  sec('Circulación');
+  fila('Circulación general', '—', '10% sobre área interior (pasillos ≥ 1.20 m)', circulacion);
+
+  /* Mobiliario */
+  const mob = [];
+  const addMob = (mueble, dim, cant) => { if (cant > 0) mob.push({ mueble, dim, cant }); };
+  addMob('Plataforma de servicio', 'Mueble 4.75×0.70 m · 2 módulos', inp.nPlataforma);
+  addMob('Estación de trabajo', 'Escritorio recto 1.50×0.60 m', inp.nEstacion);
+  addMob('Escritorio de oficina (L)', '1.80×1.20 + lateral 0.80×0.60 m', inp.nOficina);
+  addMob('Estación de recepción (L)', '1.40×1.50 + mostrador 1.40×0.40 m', inp.nRecepcion);
+  addMob('Silla ejecutiva ergonómica', 'Con ruedas · 1 por puesto', inp.nPlataforma + inp.nEstacion + inp.nOficina + inp.nRecepcion + inp.nVigilancia + nUsuariosEspeciales);
+  addMob('Silla simple acolchada (plataforma)', '1 por plataforma', inp.nPlataforma);
+  addMob('Silla simple acolchada (oficina)', '2 por oficina', inp.nOficina * 2);
+  addMob('Módulo de espera (3 sillas)', `3 asientos c/u · ${modulosEspera * 3} puestos`, modulosEspera);
+  addMob('Silla simple comedor (plástica)', 'Sin brazos', capComedor);
+  addMob('Silla para mesa de reunión', 'Con descansabrazos', inp.nSalasGrupCant * inp.nSalasGrupCap + inp.nSalasInd);
+  addMob('Mesa de reunión', `${inp.nSalasGrupCap} personas · 2.5 m² c/u`, inp.nSalasGrupCant);
+  addMob('Mesa de comedor 4 puestos', '1.50×0.90 m', Math.ceil(capComedor / 4));
+  addMob('Mueble de cocineta', '2.60×0.60 m · cuarzo + fregadero', capComedor > 0 ? 1 : 0);
+  addMob('Mueble aéreo de cocineta', '1.95×0.70×0.45 m · 2 microondas', capComedor > 0 ? 1 : 0);
+  addMob('Escritorio de vigilancia', `Puesto de seguridad 4 m²`, inp.nVigilancia);
+  if (lactanciaObligatoria) {
+    addMob('Sillón mecedora lactancia', 'Microfibra · 84×74×100 cm', 1);
+    addMob('Mesa baja lactancia', '60×45 cm', 1);
+  }
+  mobEspeciales.forEach(m => addMob(m.mueble, m.dim, m.cant));
+
+  return {
+    inp, especiales, mobEspeciales, nUsuariosEspeciales,
+    nFunc, totalPersonas,
+    aPlataforma, aEstacion, aOficina, aRecepcion, aPuestos,
+    modulosEspera, aEspera,
+    capComedor, aComedor, aCocineta,
+    lactanciaObligatoria, triggerLactanciaDecreto, triggerLactanciaCIHSE, aLactancia,
+    aSalaInd, aSalaGrup,
+    ssFunc, ssVis, ssLey, aBanos,
+    aTI, aAseo, aVigilancia,
+    aEspeciales,
+    aEstac, aEstacInst, aEstacVis, estacAcc, estacEstVis,
+    totalInterno, circulacion, totalGeneral, perCapita,
+    filas, mob
+  };
+}
+
+/* ============================================================
+   Render
+   ============================================================ */
+function calcular() {
+  const d = recopilarDatos();
+  document.getElementById('kpiTotal').innerHTML     = fmt(d.totalGeneral, 1) + ' <small>m²</small>';
+  document.getElementById('kpiOcupantes').innerHTML = fmtInt(d.totalPersonas) + ' <small>pers.</small>';
+  document.getElementById('kpiFunc').innerHTML      = fmtInt(d.nFunc) + ' <small>pers.</small>';
+  document.getElementById('kpiPerCapita').innerHTML = fmt(d.perCapita, 1) + ' <small>m²/pers.</small>';
+
+  const tbody = document.getElementById('tbodyResultados');
+  tbody.innerHTML = '';
+  d.filas.forEach(f => {
+    if (f.tipo === 'seccion') {
+      const tr = document.createElement('tr');
+      tr.className = 'seccion';
+      tr.innerHTML = `<td colspan="4">${esc(f.nombre)}</td>`;
+      tbody.appendChild(tr);
+    } else {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${esc(f.area)}</td><td class="cant">${esc(String(f.cant))}</td><td class="desc">${f.detalle}</td><td>${fmt(f.valor, 1)} m²</td>`;
+      tbody.appendChild(tr);
+    }
+  });
+  const trT = document.createElement('tr');
+  trT.className = 'total';
+  trT.innerHTML = `<td colspan="3">TOTAL ÁREA REQUERIDA</td><td>${fmt(d.totalGeneral, 1)} m²</td>`;
+  tbody.appendChild(trT);
+  if (d.aEstac > 0) {
+    const trI = document.createElement('tr');
+    trI.innerHTML = `<td colspan="3" style="font-size:0.78rem;color:var(--aya-gris-texto)">Área interior (sin estacionamiento)</td><td style="font-size:0.82rem;color:var(--aya-gris-texto)">${fmt(d.totalInterno + d.circulacion, 1)} m²</td>`;
+    tbody.appendChild(trI);
+  }
+
+  const tmob = document.getElementById('tbodyMobiliario');
+  tmob.innerHTML = '';
+  if (d.mob.length === 0) {
+    tmob.innerHTML = '<tr><td colspan="3" class="desc" style="text-align:center;font-style:italic;color:var(--aya-gris-suave)">Sin mobiliario por calcular.</td></tr>';
+  } else {
+    d.mob.forEach(m => {
+      const tr = document.createElement('tr');
+      tr.className = 'mobiliario';
+      tr.innerHTML = `<td>${esc(m.mueble)}</td><td class="desc">${esc(m.dim)}</td><td class="cant">${m.cant}</td>`;
+      tmob.appendChild(tr);
+    });
+  }
+}
+
+function resetForm() {
+  ['nPlataforma','nEstacion','nOficina','nRecepcion','nVisitantes','nMujeres','nLactancia','nSalasInd','nSalasGrupCant','nEstacInst','nEstacVis','nLimpieza','elaboradoPor']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('nPisos').value = 1;
+  document.getElementById('nSalasGrupCap').value = 6;
+  document.getElementById('nVigilancia').value = 1;
+  ['nPlataforma','nEstacion','nOficina','nRecepcion','nVisitantes','nMujeres','nLactancia','nSalasInd','nSalasGrupCant','nEstacInst','nEstacVis','nLimpieza'].forEach(id => document.getElementById(id).value = 0);
+  document.getElementById('chkCentroComercial').checked = false;
+  document.getElementById('chkEstac').checked = false;
+  document.getElementById('tbodyEspeciales').innerHTML = '';
+  document.getElementById('tbodyMobEspeciales').innerHTML = '';
+  toggleEstac();
+  calcular();
+}
+
+/* ============================================================
+   Modal impresión + vista previa
+   ============================================================ */
+function abrirModalImpresion() {
+  document.getElementById('modalImpresion').classList.add('activo');
+  actualizarHabilitadoMargen();
+}
+function cerrarModalImpresion() {
+  document.getElementById('modalImpresion').classList.remove('activo');
+}
+function cerrarPreview() {
+  document.getElementById('modalPreview').classList.remove('activo');
+  document.getElementById('iframePreview').srcdoc = '';
+}
+function volverAConfig() {
+  cerrarPreview();
+  abrirModalImpresion();
+}
+function actualizarHabilitadoMargen() {
+  const v = document.getElementById('printMargen').value;
+  document.getElementById('printMargenCustom').disabled = v !== 'custom';
+}
+function leerConfig() {
+  const orientacion = document.getElementById('printOrientacion').value;
+  const tamano = document.getElementById('printTamano').value;
+  const escala = parseInt(document.getElementById('printEscala').value, 10) || 100;
+  const mt = document.getElementById('printMargen').value;
+  let margen = '15mm';
+  if (mt === 'estrecho') margen = '8mm';
+  else if (mt === 'amplio') margen = '25mm';
+  else if (mt === 'custom') margen = (parseInt(document.getElementById('printMargenCustom').value, 10) || 15) + 'mm';
+  return {
+    orientacion, tamano, escala, margen,
+    incluirDatos:      document.getElementById('printDatos').checked,
+    incluirResumen:    document.getElementById('printResumen').checked,
+    incluirAreas:      document.getElementById('printAreas').checked,
+    incluirMobiliario: document.getElementById('printMobiliario').checked,
+    incluirNotas:      document.getElementById('printNotas').checked
+  };
+}
+
+function construirInformeHTML() {
+  const d = recopilarDatos();
+  const cfg = leerConfig();
+  const fecha = new Date().toLocaleString('es-CR', { dateStyle: 'long', timeStyle: 'short' });
+  const sizeCSS = cfg.tamano + ' ' + cfg.orientacion;
+
+  return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><title>Informe de Cálculo de Área · AyA</title>
+<style>
+  @page { size: ${sizeCSS}; margin: ${cfg.margen}; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #1B294E; margin: 0; padding: 20px; background: #fff; }
+  .doc { max-width: 100%; }
+  .header { display: flex; align-items: center; gap: 16px; border-bottom: 3px solid #C9AD6E; padding-bottom: 10px; margin-bottom: 16px; }
+  .header img { height: 50px; }
+  .header .titulos h1 { margin: 0; font-size: 18px; color: #1B294E; letter-spacing: 1px; }
+  .header .titulos h2 { margin: 2px 0 0; font-size: 12px; font-weight: 400; color: #5B678A; }
+  .header .titulos h3 { margin: 2px 0 0; font-size: 10px; font-weight: 300; color: #94A0BD; }
+  .header .titulo-derecha { margin-left: auto; font-size: 14px; font-weight: 700; letter-spacing: 2px; color: #8B7338; text-transform: uppercase; border-left: 2px solid #C9AD6E; padding-left: 14px; }
+  h2.seccion { font-size: 13px; color: #1B294E; margin: 18px 0 8px; padding: 6px 10px; background: rgba(201,173,110,.18); border-left: 3px solid #C9AD6E; text-transform: uppercase; letter-spacing: 0.5px; }
+  .meta { font-size: 10px; color: #5B678A; margin-bottom: 14px; }
+  .meta b { color: #1B294E; }
+  table { width: 100%; border-collapse: collapse; font-size: 10.5px; margin-bottom: 8px; }
+  th { background: #1B294E; color: #fff; padding: 6px; text-align: left; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px; }
+  th.center { text-align: center; }
+  th:last-child { text-align: right; }
+  td { padding: 5px 6px; border-bottom: 1px solid #E0E3EB; vertical-align: top; }
+  td.cant { text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; color: #1B294E; }
+  td.desc { color: #5B678A; font-size: 9.5px; }
+  td:last-child { text-align: right; font-weight: 600; }
+  tr.seccion td { background: #F5F6FA; font-weight: 700; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.5px; color: #1B294E; }
+  tr.total td { background: #1B294E; color: #fff; font-weight: 700; font-size: 11px; border: none; }
+  tr.total td:last-child { color: #DEC584; font-size: 12px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+  .kpi { border: 1px solid #E0E3EB; border-radius: 6px; padding: 10px 12px; background: #F5F6FA; }
+  .kpi.destacado { background: #1B294E; color: #fff; border-color: #1B294E; }
+  .kpi .label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: #5B678A; font-weight: 700; }
+  .kpi.destacado .label { color: #C9AD6E; }
+  .kpi .value { font-size: 18px; font-weight: 700; margin-top: 4px; color: #1B294E; }
+  .kpi.destacado .value { color: #fff; }
+  .kpi .value small { font-size: 10px; font-weight: 500; color: #5B678A; }
+  .kpi.destacado .value small { color: #DEC584; }
+  .notas { font-size: 10px; color: #5B678A; line-height: 1.5; background: rgba(201,173,110,.12); border-left: 3px solid #C9AD6E; padding: 10px 14px; border-radius: 4px; margin-top: 14px; }
+  .notas b { color: #8B7338; }
+  .notas ul { margin: 4px 0 0 0; padding-left: 16px; }
+  .notas li { margin-bottom: 3px; }
+  .firma-block { margin-top: 30px; display: flex; flex-direction: column; align-items: flex-end; page-break-inside: avoid; }
+  .firma-espacio { width: 220px; height: 60px; background: #FFFFFF; border: none; }
+  .firma-nombre { width: 220px; text-align: center; font-size: 11px; font-weight: 700; color: #1B294E; padding-top: 4px; }
+  .firma-label { width: 220px; text-align: center; font-size: 9px; color: #5B678A; margin-top: 1px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .footer { margin-top: 18px; font-size: 9px; color: #94A0BD; border-top: 1px solid #E0E3EB; padding-top: 8px; text-align: center; }
+  @media print { body { padding: 0; } }
+</style></head><body>
+<div class="doc">
+  <div class="header">
+    <img src="https://www.aya.go.cr/assets/img/96cb7f83-6325-4ee1-8e4e-fa1e21262be8.png" alt="AyA">
+    <div class="titulos">
+      <h1>Informe de Cálculo de Área</h1>
+      <h2>UEN Programación y Control</h2>
+      <h3>Instituto Costarricense de Acueductos y Alcantarillados</h3>
+    </div>
+    <div class="titulo-derecha">Edificaciones</div>
+  </div>
+
+  <div class="meta">
+    <b>Generado:</b> ${esc(fecha)}
+  </div>
+
+  ${cfg.incluirDatos ? `
+    <h2 class="seccion">1. Datos de entrada</h2>
+    <table>
+      <thead><tr><th>Concepto</th><th class="center" style="width:70px">Cantidad</th><th>Observación</th></tr></thead>
+      <tbody>
+        <tr><td>Plataformas</td><td class="cant">${d.inp.nPlataforma}</td><td class="desc">Ventanilla 4.75×0.70 m · 6 m² c/u</td></tr>
+        <tr><td>Estaciones de trabajo</td><td class="cant">${d.inp.nEstacion}</td><td class="desc">Escritorio recto 1.50×0.60 m · 8 m² c/u</td></tr>
+        <tr><td>Oficinas</td><td class="cant">${d.inp.nOficina}</td><td class="desc">Escritorio L 1.80×1.20 m · 12 m² c/u</td></tr>
+        <tr><td>Recepciones</td><td class="cant">${d.inp.nRecepcion}</td><td class="desc">Mueble L 1.40×1.50 + mostrador · 10 m² c/u</td></tr>
+        <tr><td>Vigilantes</td><td class="cant">${d.inp.nVigilancia}</td><td class="desc">Escritorio 4 m² c/u · cuenta como ocupante</td></tr>
+        <tr><td>Personal de limpieza</td><td class="cant">${d.inp.nLimpieza}</td><td class="desc">Cuenta como ocupante</td></tr>
+        <tr><td>Usuarios en áreas especiales</td><td class="cant">${d.nUsuariosEspeciales}</td><td class="desc">Se suman a ocupantes</td></tr>
+        <tr><td>Visitantes simultáneos</td><td class="cant">${d.inp.nVisitantes}</td><td class="desc">Sala de espera 1.4 m² c/u</td></tr>
+        <tr><td>Pisos</td><td class="cant">${d.inp.nPisos}</td><td class="desc">TI y aseo 3 m² por piso</td></tr>
+        <tr><td>Funcionarias mujeres</td><td class="cant">${d.inp.nMujeres}</td><td class="desc">Split H/M para SS · trigger CIHSE 5.1-3 (≥30)</td></tr>
+        <tr><td>Funcionarias en lactancia</td><td class="cant">${d.inp.nLactancia}</td><td class="desc">Cualquier valor ≥1 obliga (Decreto 44943)</td></tr>
+        <tr><td>Salas individuales</td><td class="cant">${d.inp.nSalasInd}</td><td class="desc">Sala 1 persona · 4 m² mín.</td></tr>
+        <tr><td>Salas grupales</td><td class="cant">${d.inp.nSalasGrupCant}</td><td class="desc">${d.inp.nSalasGrupCap} personas por sala</td></tr>
+        <tr><td>Estacionamiento institucional</td><td class="cant">${d.inp.chkEstac ? d.inp.nEstacInst : 0}</td><td class="desc">12.5 m² c/u</td></tr>
+        <tr><td>Estacionamiento visitantes</td><td class="cant">${d.inp.chkEstac ? d.inp.nEstacVis : 0}</td><td class="desc">Accesible máx(2, 5%) · solo visitantes</td></tr>
+        <tr><td>Centro comercial</td><td class="cant">${d.inp.esCentroComercial ? 'Sí' : 'No'}</td><td class="desc">${d.inp.esCentroComercial ? 'Exime SS Ley 7600' : 'Requiere SS Ley 7600'}</td></tr>
+      </tbody>
+    </table>
+  ` : ''}
+
+  ${cfg.incluirResumen ? `
+    <h2 class="seccion">2. Resumen ejecutivo</h2>
+    <div class="kpis">
+      <div class="kpi destacado"><div class="label">Área total</div><div class="value">${fmt(d.totalGeneral,1)} <small>m²</small></div></div>
+      <div class="kpi"><div class="label">Ocupantes</div><div class="value">${fmtInt(d.totalPersonas)} <small>pers.</small></div></div>
+      <div class="kpi"><div class="label">Funcionarios</div><div class="value">${fmtInt(d.nFunc)} <small>pers.</small></div></div>
+      <div class="kpi"><div class="label">Área / persona</div><div class="value">${fmt(d.perCapita,1)} <small>m²/p</small></div></div>
+    </div>
+  ` : ''}
+
+  ${cfg.incluirAreas ? `
+    <h2 class="seccion">3. Desglose detallado de áreas</h2>
+    <table>
+      <thead><tr><th>Área</th><th class="center" style="width:55px">Cant.</th><th>Detalle</th><th>m²</th></tr></thead>
+      <tbody>
+        ${d.filas.map(f => f.tipo === 'seccion'
+          ? `<tr class="seccion"><td colspan="4">${esc(f.nombre)}</td></tr>`
+          : `<tr><td>${esc(f.area)}</td><td class="cant">${esc(String(f.cant))}</td><td class="desc">${f.detalle}</td><td>${fmt(f.valor,1)} m²</td></tr>`
+        ).join('')}
+        <tr class="total"><td colspan="3">TOTAL ÁREA REQUERIDA</td><td>${fmt(d.totalGeneral,1)} m²</td></tr>
+      </tbody>
+    </table>
+  ` : ''}
+
+  ${cfg.incluirMobiliario ? `
+    <h2 class="seccion">4. Mobiliario estimado</h2>
+    <table>
+      <thead><tr><th>Mueble</th><th>Dimensiones / tipo</th><th class="center" style="width:80px">Cantidad</th></tr></thead>
+      <tbody>
+        ${d.mob.length === 0
+          ? `<tr><td colspan="3" class="desc" style="text-align:center;font-style:italic">Sin mobiliario por calcular.</td></tr>`
+          : d.mob.map(m => `<tr><td>${esc(m.mueble)}</td><td class="desc">${esc(m.dim)}</td><td class="cant">${m.cant}</td></tr>`).join('')
+        }
+      </tbody>
+    </table>
+  ` : ''}
+
+  ${cfg.incluirNotas ? `
+    <div class="notas">
+      <b>Referencias normativas</b>
+      <ul>
+        <li><b>Leyes:</b> Ley 7600 (Igualdad de Oportunidades para las Personas con Discapacidad) y Decreto Ejecutivo 44943-MTSS-S (Lactancia Materna).</li>
+        <li><b>Código 2017:</b> Código de Instalaciones Hidráulicas y Sanitarias en Edificaciones (CIHSE).</li>
+        <li><b>Mobiliario AyA:</b> Condiciones específicas de acondicionamiento de oficinas (2025).</li>
+        <li><b>Códigos:</b> Código de Trabajo, Código de Construcciones y normativa complementaria.</li>
+        <li><b>CONAPDIS:</b> Instrumento técnico de verificación de accesibilidad física (Ley 7600).</li>
+        <li><b>Consejo de Salud Ocupacional (CSO):</b> Guía de inspección de condiciones de salud ocupacional y sus herramientas.</li>
+      </ul>
+    </div>
+  ` : ''}
+
+  ${d.inp.elaboradoPor ? `
+    <div class="firma-block">
+      <div class="firma-espacio"></div>
+      <div class="firma-nombre">${esc(d.inp.elaboradoPor)}</div>
+      <div class="firma-label">Elaborado por</div>
+    </div>
+  ` : ''}
+
+  <div class="footer">
+    Plataforma interna · Calculadora de Área · UEN Programación y Control · AyA · ${esc(fecha)}
+  </div>
+</div>
+</body></html>`;
+}
+
+function generarVistaPrevia() {
+  const html = construirInformeHTML();
+  document.getElementById('iframePreview').srcdoc = html;
+  document.getElementById('modalImpresion').classList.remove('activo');
+  document.getElementById('modalPreview').classList.add('activo');
+}
+function imprimirDesdePreview() {
+  const iframe = document.getElementById('iframePreview');
+  if (!iframe.contentWindow) {
+    alert('No se pudo acceder al contenido del informe. Intente de nuevo.');
+    return;
+  }
+  try {
+    iframe.contentWindow.focus();
+    setTimeout(() => iframe.contentWindow.print(), 150);
+  } catch (e) {
+    console.warn(e);
+    alert('El navegador bloqueó la impresión. Intente abrir el informe en una nueva pestaña.');
+  }
+}
+
+/* ============================================================
+   Init
+   ============================================================ */
+document.getElementById('printMargen').addEventListener('change', actualizarHabilitadoMargen);
+document.getElementById('modalImpresion').addEventListener('click', e => {
+  if (e.target.id === 'modalImpresion') cerrarModalImpresion();
+});
+document.getElementById('modalPreview').addEventListener('click', e => {
+  if (e.target.id === 'modalPreview') cerrarPreview();
+});
+
+toggleEstac();
+calcular();
+</script>
+</body>
+</html>
