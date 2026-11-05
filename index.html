@@ -35,12 +35,23 @@ header .titulo-derecha { margin-left:auto; font-size:1.2rem; font-weight:700; le
 main { padding: 18px 24px 30px; max-width: 1400px; margin: 0 auto; }
 .subtitulo { color: var(--aya-gris-texto); font-size: 0.88rem; margin: 0 0 16px; line-height: 1.45; }
 .subtitulo b { color: var(--aya-azul); }
-.layout { display: grid; grid-template-columns: 1fr 1.15fr; gap: 20px; align-items: start; }
-@media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
+
+.layout { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
 
 .card { background: var(--aya-blanco); border: 1px solid var(--aya-borde); border-radius: 10px; border-top: 3px solid var(--aya-dorado); padding: 16px 18px; box-shadow: 0 1px 4px rgba(27,41,78,.06); margin-bottom: 18px; }
-.card h2 { margin: 0 0 14px; font-size: 1.02rem; color: var(--aya-azul); display: flex; align-items: center; gap: 10px; }
+.card h2 { margin: 0 0 14px; font-size: 1.02rem; color: var(--aya-azul); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .card h2 .num { background: var(--aya-azul); color: var(--aya-blanco); width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.82rem; flex-shrink: 0; }
+
+.titulo-informe-bloque {
+  background: var(--aya-blanco);
+  border: 1px solid var(--aya-borde);
+  border-left: 4px solid var(--aya-dorado);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 4px rgba(27,41,78,.06);
+}
+.titulo-informe-bloque .campo { margin-bottom: 0; }
 
 .campo { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
 .campo > label { font-weight: 600; color: var(--aya-gris-texto); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -84,7 +95,7 @@ table.resultados tr.total td { background: var(--aya-azul); color: var(--aya-bla
 table.resultados tr.total td:last-child { font-size: 1.05rem; color: var(--aya-dorado-claro); }
 table.resultados tr.mobiliario td { font-size: 0.8rem; color: var(--aya-azul); background: #FAFBFD; }
 
-.acciones { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.acciones { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
 button.btn-azul { background: var(--aya-azul); color: var(--aya-blanco); border: none; padding: 9px 16px; border-radius: 6px; font-size: 0.88rem; cursor: pointer; transition: background 0.2s; font-family: inherit; }
 button.btn-azul:hover { background: var(--aya-azul-medio); }
 button.btn-gris { background: var(--aya-gris-suave); color: var(--aya-blanco); border: none; padding: 9px 16px; border-radius: 6px; font-size: 0.88rem; cursor: pointer; font-family: inherit; }
@@ -96,6 +107,7 @@ button.btn-dorado:hover { background: var(--aya-dorado-oscuro); color: var(--aya
 .elaborado-grupo label { font-weight:600; color:var(--aya-gris-texto); text-transform:uppercase; font-size:0.72rem; letter-spacing:0.5px; white-space:nowrap; }
 .elaborado-grupo input { border:1px solid var(--aya-borde-fuerte); border-radius:5px; padding:7px 9px; font-size:0.88rem; font-family:inherit; background:var(--aya-fondo-claro); color:var(--aya-azul); min-width:180px; }
 .elaborado-grupo input:focus { outline:none; border-color:var(--aya-dorado); background:var(--aya-blanco); }
+@media (max-width: 600px) { .elaborado-grupo { margin-left:0; width:100%; } .elaborado-grupo input { min-width:0; width:100%; } }
 
 .tabla-dinamica { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-bottom: 8px; }
 .tabla-dinamica th { background: var(--aya-fondo-claro); color: var(--aya-azul); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 4px; text-align: left; border-bottom: 1px solid var(--aya-borde-fuerte); font-weight: 700; }
@@ -143,8 +155,16 @@ footer { text-align:center; font-size:0.75rem; padding:10px; background: var(--a
   </p>
 
   <div class="layout">
-    <!-- ENTRADAS -->
     <div>
+      <!-- TÍTULO DEL INFORME -->
+      <div class="titulo-informe-bloque">
+        <div class="campo">
+          <label for="tituloInforme">Título de informe <span class="hint">aparecerá centrado en el PDF</span></label>
+          <input type="text" id="tituloInforme" placeholder="Ej: Cálculo de Área – Agencia Central" oninput="calcular()">
+        </div>
+      </div>
+
+      <!-- 1. OCUPANTES -->
       <div class="card">
         <h2><span class="num">1</span> Ocupantes</h2>
         <div class="campo-row c4">
@@ -276,10 +296,7 @@ footer { text-align:center; font-size:0.75rem; padding:10px; background: var(--a
         </table>
         <button type="button" class="btn-azul" onclick="addMobEspecial()">+ Agregar mobiliario</button>
       </div>
-    </div>
 
-    <!-- RESULTADOS -->
-    <div>
       <div class="card">
         <h2><span class="num">∑</span> Resumen</h2>
         <div class="resumen-grid">
@@ -334,7 +351,7 @@ footer { text-align:center; font-size:0.75rem; padding:10px; background: var(--a
           <tbody id="tbodyMobiliario"></tbody>
         </table>
         <div class="nota" style="margin-top:12px">
-          Cantidades orientativas. Mesas de reunión según capacidad. Sillas ejecutivas = 1 por puesto (incluye vigilancia y usuarios especiales). Sillas simples acolchadas: 1 por plataforma, 2 por oficina. Módulos de espera agrupan 3 sillas.
+          Cantidades orientativas. Mesas de reunión según capacidad. Sillas ejecutivas = 1 por puesto (incluye vigilancia y usuarios especiales). Sillas simples acolchadas: 1 por plataforma, 2 por oficina. Módulos de espera agrupan 3 sillas. <b>Arturito</b> = 1 por cada plataforma, estación, oficina, recepción y escritorio de vigilancia.
         </div>
       </div>
     </div>
@@ -585,6 +602,7 @@ function calcularSSVisitantes(n, tieneSS7600) {
    ============================================================ */
 function recopilarDatos() {
   const inp = {
+    tituloInforme: (document.getElementById('tituloInforme').value || '').trim(),
     nPlataforma: Math.max(0, +document.getElementById('nPlataforma').value || 0),
     nEstacion:   Math.max(0, +document.getElementById('nEstacion').value   || 0),
     nOficina:    Math.max(0, +document.getElementById('nOficina').value    || 0),
@@ -741,6 +759,12 @@ function recopilarDatos() {
   addMob('Estación de trabajo', 'Escritorio recto 1.50×0.60 m', inp.nEstacion);
   addMob('Escritorio de oficina (L)', '1.80×1.20 + lateral 0.80×0.60 m', inp.nOficina);
   addMob('Estación de recepción (L)', '1.40×1.50 + mostrador 1.40×0.40 m', inp.nRecepcion);
+  addMob('Escritorio de vigilancia', `Puesto de seguridad 4 m²`, inp.nVigilancia);
+
+  /* Arturito: 1 por cada plataforma, estación, oficina, recepción y vigilancia */
+  addMob('Arturito (gaveta + puerta)', '65 cm alto × 50 cm frente × 50 cm fondo',
+    inp.nPlataforma + inp.nEstacion + inp.nOficina + inp.nRecepcion + inp.nVigilancia);
+
   addMob('Silla ejecutiva ergonómica', 'Con ruedas · 1 por puesto', inp.nPlataforma + inp.nEstacion + inp.nOficina + inp.nRecepcion + inp.nVigilancia + nUsuariosEspeciales);
   addMob('Silla simple acolchada (plataforma)', '1 por plataforma', inp.nPlataforma);
   addMob('Silla simple acolchada (oficina)', '2 por oficina', inp.nOficina * 2);
@@ -751,7 +775,6 @@ function recopilarDatos() {
   addMob('Mesa de comedor 4 puestos', '1.50×0.90 m', Math.ceil(capComedor / 4));
   addMob('Mueble de cocineta', '2.60×0.60 m · cuarzo + fregadero', capComedor > 0 ? 1 : 0);
   addMob('Mueble aéreo de cocineta', '1.95×0.70×0.45 m · 2 microondas', capComedor > 0 ? 1 : 0);
-  addMob('Escritorio de vigilancia', `Puesto de seguridad 4 m²`, inp.nVigilancia);
   if (lactanciaObligatoria) {
     addMob('Sillón mecedora lactancia', 'Microfibra · 84×74×100 cm', 1);
     addMob('Mesa baja lactancia', '60×45 cm', 1);
@@ -824,7 +847,7 @@ function calcular() {
 }
 
 function resetForm() {
-  ['nPlataforma','nEstacion','nOficina','nRecepcion','nVisitantes','nMujeres','nLactancia','nSalasInd','nSalasGrupCant','nEstacInst','nEstacVis','nLimpieza','elaboradoPor']
+  ['nPlataforma','nEstacion','nOficina','nRecepcion','nVisitantes','nMujeres','nLactancia','nSalasInd','nSalasGrupCant','nEstacInst','nEstacVis','nLimpieza','elaboradoPor','tituloInforme']
     .forEach(id => document.getElementById(id).value = '');
   document.getElementById('nPisos').value = 1;
   document.getElementById('nSalasGrupCap').value = 6;
@@ -889,15 +912,53 @@ function construirInformeHTML() {
 <html lang="es"><head><meta charset="UTF-8"><title>Informe de Cálculo de Área · AyA</title>
 <style>
   @page { size: ${sizeCSS}; margin: ${cfg.margen}; }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #1B294E; margin: 0; padding: 20px; background: #fff; }
   .doc { max-width: 100%; }
-  .header { display: flex; align-items: center; gap: 16px; border-bottom: 3px solid #C9AD6E; padding-bottom: 10px; margin-bottom: 16px; }
-  .header img { height: 50px; }
-  .header .titulos h1 { margin: 0; font-size: 18px; color: #1B294E; letter-spacing: 1px; }
-  .header .titulos h2 { margin: 2px 0 0; font-size: 12px; font-weight: 400; color: #5B678A; }
-  .header .titulos h3 { margin: 2px 0 0; font-size: 10px; font-weight: 300; color: #94A0BD; }
-  .header .titulo-derecha { margin-left: auto; font-size: 14px; font-weight: 700; letter-spacing: 2px; color: #8B7338; text-transform: uppercase; border-left: 2px solid #C9AD6E; padding-left: 14px; }
+
+  .header {
+    background: #1B294E;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    border-bottom: 3px solid #C9AD6E;
+    border-radius: 6px 6px 0 0;
+    margin-bottom: 16px;
+  }
+  .header img { height: 48px; display: block; flex-shrink: 0; }
+  .header .titulos h1 { margin: 0; font-size: 16px; letter-spacing: 1px; color: #FFFFFF; }
+  .header .titulos h2 { margin: 2px 0 0; font-size: 11px; font-weight: 400; color: #FFFFFF; opacity: 0.92; }
+  .header .titulos h3 { margin: 2px 0 0; font-size: 9px; font-weight: 300; color: #FFFFFF; opacity: 0.75; }
+  .header .titulo-derecha {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #C9AD6E;
+    padding-left: 16px;
+    border-left: 2px solid #C9AD6E;
+    white-space: nowrap;
+  }
+
+  .titulo-informe-print {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 800;
+    color: #1B294E;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin: 6px 0 22px;
+    padding: 12px 14px;
+    border-top: 2px solid #C9AD6E;
+    border-bottom: 2px solid #C9AD6E;
+    background: rgba(201,173,110,.10);
+    border-radius: 4px;
+    line-height: 1.25;
+  }
+
   h2.seccion { font-size: 13px; color: #1B294E; margin: 18px 0 8px; padding: 6px 10px; background: rgba(201,173,110,.18); border-left: 3px solid #C9AD6E; text-transform: uppercase; letter-spacing: 0.5px; }
   .meta { font-size: 10px; color: #5B678A; margin-bottom: 14px; }
   .meta b { color: #1B294E; }
@@ -937,15 +998,19 @@ function construirInformeHTML() {
     <img src="https://www.aya.go.cr/assets/img/96cb7f83-6325-4ee1-8e4e-fa1e21262be8.png" alt="AyA">
     <div class="titulos">
       <h1>Informe de Cálculo de Área</h1>
-      <h2>UEN Programación y Control</h2>
+      <h2>Edificaciones · UEN Programación y Control</h2>
       <h3>Instituto Costarricense de Acueductos y Alcantarillados</h3>
     </div>
-    <div class="titulo-derecha">Edificaciones</div>
+    <div class="titulo-derecha">Espacio Arquitectónico</div>
   </div>
 
   <div class="meta">
     <b>Generado:</b> ${esc(fecha)}
   </div>
+
+  ${d.inp.tituloInforme ? `
+    <div class="titulo-informe-print">${esc(d.inp.tituloInforme)}</div>
+  ` : ''}
 
   ${cfg.incluirDatos ? `
     <h2 class="seccion">1. Datos de entrada</h2>
@@ -967,7 +1032,7 @@ function construirInformeHTML() {
         <tr><td>Salas grupales</td><td class="cant">${d.inp.nSalasGrupCant}</td><td class="desc">${d.inp.nSalasGrupCap} personas por sala</td></tr>
         <tr><td>Estacionamiento institucional</td><td class="cant">${d.inp.chkEstac ? d.inp.nEstacInst : 0}</td><td class="desc">12.5 m² c/u</td></tr>
         <tr><td>Estacionamiento visitantes</td><td class="cant">${d.inp.chkEstac ? d.inp.nEstacVis : 0}</td><td class="desc">Accesible máx(2, 5%) · solo visitantes</td></tr>
-        <tr><td>Centro comercial</td><td class="cant">${d.inp.esCentroComercial ? 'Sí' : 'No'}</td><td class="desc">${d.inp.esCentroComercial ? 'Exime SS Ley 7600' : 'Requiere SS Ley 7600'}</td></tr>
+        <tr><td>Ubicado en Centro Comercial</td><td class="cant">${d.inp.esCentroComercial ? 'Sí' : 'No'}</td><td class="desc">${d.inp.esCentroComercial ? 'Exime SS Ley 7600' : 'Requiere SS Ley 7600'}</td></tr>
       </tbody>
     </table>
   ` : ''}
