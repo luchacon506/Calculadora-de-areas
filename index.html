@@ -704,7 +704,7 @@ function recopilarDatos() {
   if (aEspera > 0 || aComedor > 0 || aCocineta > 0 || aSalaInd > 0 || aSalaGrup > 0 || aLactancia > 0) {
     sec('Áreas comunes');
     fila('Sala de espera', inp.nVisitantes, `${modulosEspera} módulo(s) de 3 sillas · 1.4 m²/pers.`, aEspera);
-    fila('Comedor', capComedor, `${nFunc} funcionarios / 2 tandas → par sup. + 15% circulación`, aComedor);
+    fila('Comedor', 1, `${capComedor} espacios · ${nFunc} funcionarios / 2 tandas → par sup. + 15% circulación`, aComedor);
     fila('Cocineta (comedor)', capComedor > 0 ? 1 : 0, 'Mueble 2.60×0.60 m + circulación frontal', aCocineta);
     fila('Salas de reunión individuales', inp.nSalasInd, 'Sala 1 persona · 4 m² mín.', aSalaInd);
     fila('Salas de reunión grupales', inp.nSalasGrupCant, `${inp.nSalasGrupCap} pers./sala · 2.5 m² c/u`, aSalaGrup);
