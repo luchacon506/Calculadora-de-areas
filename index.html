@@ -72,7 +72,7 @@ main { padding: 18px 24px 30px; max-width: 1400px; margin: 0 auto; }
 .nota { font-size: 0.78rem; color: var(--aya-gris-texto); background: var(--aya-tinte-dorado); border-left: 3px solid var(--aya-dorado); padding: 8px 12px; border-radius: 5px; margin: 4px 0 10px; line-height: 1.45; }
 .nota b { color: var(--aya-dorado-oscuro); }
 
-.resumen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.resumen-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
 @media (max-width: 500px) { .resumen-grid { grid-template-columns: 1fr; } }
 .kpi { background: var(--aya-fondo-claro); border: 1px solid var(--aya-borde); border-radius: 8px; padding: 12px 14px; }
 .kpi .label { font-size: 0.72rem; color: var(--aya-gris-texto); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; margin-bottom: 4px; }
@@ -315,6 +315,10 @@ footer { text-align:center; font-size:0.75rem; padding:10px; background: var(--a
           <div class="kpi">
             <div class="label">Funcionarios</div>
             <div class="value" id="kpiFunc">0 <small>pers.</small></div>
+          </div>
+          <div class="kpi">
+            <div class="label">Personal Complementario</div>
+            <div class="value" id="kpiPersonal">0 <small>pers.</small></div>
           </div>
         </div>
         <div class="acciones no-print">
@@ -626,7 +630,15 @@ function recopilarDatos() {
   const mobEspeciales = leerMobEspeciales();
 
   const nUsuariosEspeciales = especiales.reduce((s, e) => s + e.usuarios, 0);
-  const nFunc = inp.nPlataforma + inp.nEstacion + inp.nOficina + inp.nRecepcion + inp.nVigilancia + inp.nLimpieza + nUsuariosEspeciales;
+
+  /* Personal Complementario = vigilancia + limpieza */
+  const nPersonalComplementario = inp.nVigilancia + inp.nLimpieza;
+
+  /* Funcionarios = plataforma + estación + oficina + recepción + usuarios especiales */
+  const nFuncionarios = inp.nPlataforma + inp.nEstacion + inp.nOficina + inp.nRecepcion + nUsuariosEspeciales;
+
+  /* Total que trabaja en el edificio (para SS, comedor, per-cápita) */
+  const nFunc = nFuncionarios + nPersonalComplementario;
   const totalPersonas = nFunc + inp.nVisitantes;
 
   /* Puestos */
@@ -783,7 +795,7 @@ function recopilarDatos() {
 
   return {
     inp, especiales, mobEspeciales, nUsuariosEspeciales,
-    nFunc, totalPersonas,
+    nFunc, nFuncionarios, nPersonalComplementario, totalPersonas,
     aPlataforma, aEstacion, aOficina, aRecepcion, aPuestos,
     modulosEspera, aEspera,
     capComedor, aComedor, aCocineta,
@@ -805,8 +817,9 @@ function calcular() {
   const d = recopilarDatos();
   document.getElementById('kpiTotal').innerHTML     = fmt(d.totalGeneral, 1) + ' <small>m²</small>';
   document.getElementById('kpiOcupantes').innerHTML = fmtInt(d.totalPersonas) + ' <small>pers.</small>';
-  document.getElementById('kpiFunc').innerHTML      = fmtInt(d.nFunc) + ' <small>pers.</small>';
   document.getElementById('kpiPerCapita').innerHTML = fmt(d.perCapita, 1) + ' <small>m²/pers.</small>';
+  document.getElementById('kpiFunc').innerHTML      = fmtInt(d.nFuncionarios) + ' <small>pers.</small>';
+  document.getElementById('kpiPersonal').innerHTML  = fmtInt(d.nPersonalComplementario) + ' <small>pers.</small>';
 
   const tbody = document.getElementById('tbodyResultados');
   tbody.innerHTML = '';
@@ -973,7 +986,7 @@ function construirInformeHTML() {
   tr.seccion td { background: #F5F6FA; font-weight: 700; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.5px; color: #1B294E; }
   tr.total td { background: #1B294E; color: #fff; font-weight: 700; font-size: 11px; border: none; }
   tr.total td:last-child { color: #DEC584; font-size: 12px; }
-  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 12px; }
   .kpi { border: 1px solid #E0E3EB; border-radius: 6px; padding: 10px 12px; background: #F5F6FA; }
   .kpi.destacado { background: #1B294E; color: #fff; border-color: #1B294E; }
   .kpi .label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: #5B678A; font-weight: 700; }
@@ -1042,7 +1055,8 @@ function construirInformeHTML() {
     <div class="kpis">
       <div class="kpi destacado"><div class="label">Área total</div><div class="value">${fmt(d.totalGeneral,1)} <small>m²</small></div></div>
       <div class="kpi"><div class="label">Ocupantes</div><div class="value">${fmtInt(d.totalPersonas)} <small>pers.</small></div></div>
-      <div class="kpi"><div class="label">Funcionarios</div><div class="value">${fmtInt(d.nFunc)} <small>pers.</small></div></div>
+      <div class="kpi"><div class="label">Funcionarios</div><div class="value">${fmtInt(d.nFuncionarios)} <small>pers.</small></div></div>
+      <div class="kpi"><div class="label">Personal Complementario</div><div class="value">${fmtInt(d.nPersonalComplementario)} <small>pers.</small></div></div>
       <div class="kpi"><div class="label">Área / persona</div><div class="value">${fmt(d.perCapita,1)} <small>m²/p</small></div></div>
     </div>
   ` : ''}
