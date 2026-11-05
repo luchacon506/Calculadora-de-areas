@@ -434,6 +434,9 @@ footer { text-align:center; font-size:0.75rem; padding:10px; background: var(--a
     <h2>📄 Vista previa del informe <button class="cerrar" onclick="cerrarPreview()">✕</button></h2>
     <iframe id="iframePreview"></iframe>
     <div class="acciones">
+      <span style="font-size:.72rem;color:var(--aya-gris-suave);margin-right:auto;line-height:1.4">
+        Se abrirá una pestaña nueva con el informe; use "Guardar como PDF" en el diálogo de impresión.
+      </span>
       <button class="btn-gris" onclick="volverAConfig()">← Volver a configurar</button>
       <button class="btn-dorado" onclick="imprimirDesdePreview()">🖨 Imprimir / Guardar PDF</button>
     </div>
@@ -926,7 +929,20 @@ function construirInformeHTML() {
 <style>
   @page { size: ${sizeCSS}; margin: ${cfg.margen}; }
   * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #1B294E; margin: 0; padding: 20px; background: #fff; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    color: #1B294E;
+    margin: 0;
+    padding: 20px;
+    background: #fff;
+    /* Mejora el renderizado de glifos y evita que el motor de impresión
+       convierta el texto a imagen por “textura”/subpixel antialiasing */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-synthesis: none;
+  }
   .doc { max-width: 100%; }
 
   .header {
@@ -1004,7 +1020,10 @@ function construirInformeHTML() {
   .firma-nombre { width: 220px; text-align: center; font-size: 11px; font-weight: 700; color: #1B294E; padding-top: 4px; }
   .firma-label { width: 220px; text-align: center; font-size: 9px; color: #5B678A; margin-top: 1px; text-transform: uppercase; letter-spacing: 0.5px; }
   .footer { margin-top: 18px; font-size: 9px; color: #94A0BD; border-top: 1px solid #E0E3EB; padding-top: 8px; text-align: center; }
-  @media print { body { padding: 0; } }
+  @media print {
+    body { padding: 0; }
+    * { font-variant-ligatures: none; }
+  }
 </style></head><body>
 <div class="doc">
   <div class="header">
@@ -1124,17 +1143,37 @@ function generarVistaPrevia() {
   document.getElementById('modalPreview').classList.add('activo');
 }
 function imprimirDesdePreview() {
-  const iframe = document.getElementById('iframePreview');
-  if (!iframe.contentWindow) {
-    alert('No se pudo acceder al contenido del informe. Intente de nuevo.');
+  const html = construirInformeHTML();
+
+  // Abrir el informe como documento propio → garantiza texto seleccionable en el PDF
+  const ventana = window.open('', '_blank');
+  if (!ventana) {
+    alert('El navegador bloqueó la ventana emergente.\n\n' +
+          'Permita ventanas emergentes para este sitio y vuelva a intentar.\n\n' +
+          'Alternativa: en la vista previa, use el menú del navegador → "Imprimir" → "Guardar como PDF".');
     return;
   }
-  try {
-    iframe.contentWindow.focus();
-    setTimeout(() => iframe.contentWindow.print(), 150);
-  } catch (e) {
-    console.warn(e);
-    alert('El navegador bloqueó la impresión. Intente abrir el informe en una nueva pestaña.');
+
+  ventana.document.open();
+  ventana.document.write(html);
+  ventana.document.close();
+
+  const triggerPrint = () => {
+    try {
+      ventana.focus();
+      ventana.print();
+    } catch (e) {
+      console.warn('Error al invocar impresión:', e);
+    }
+  };
+
+  // Esperar a que carguen imagen del logo y fuentes antes de imprimir
+  if (ventana.document.readyState === 'complete') {
+    setTimeout(triggerPrint, 500);
+  } else {
+    ventana.addEventListener('load', () => setTimeout(triggerPrint, 500), { once: true });
+    // Respaldo por si el evento load no se dispara
+    setTimeout(triggerPrint, 1500);
   }
 }
 
