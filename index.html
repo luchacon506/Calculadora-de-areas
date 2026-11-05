@@ -374,8 +374,8 @@ footer { text-align:center; font-size:0.75rem; padding:10px; background: var(--a
       <div class="campo">
         <label>Orientación</label>
         <select id="printOrientacion">
-          <option value="portrait">Vertical</option>
-          <option value="landscape" selected>Horizontal</option>
+          <option value="portrait" selected>Vertical</option>
+          <option value="landscape">Horizontal</option>
         </select>
       </div>
       <div class="campo">
@@ -918,6 +918,9 @@ function leerConfig() {
   };
 }
 
+/* ============================================================
+   Informe HTML (documento independiente)
+   ============================================================ */
 function construirInformeHTML() {
   const d = recopilarDatos();
   const cfg = leerConfig();
@@ -936,12 +939,6 @@ function construirInformeHTML() {
     margin: 0;
     padding: 20px;
     background: #fff;
-    /* Mejora el renderizado de glifos y evita que el motor de impresión
-       convierta el texto a imagen por “textura”/subpixel antialiasing */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    font-synthesis: none;
   }
   .doc { max-width: 100%; }
 
@@ -1022,7 +1019,6 @@ function construirInformeHTML() {
   .footer { margin-top: 18px; font-size: 9px; color: #94A0BD; border-top: 1px solid #E0E3EB; padding-top: 8px; text-align: center; }
   @media print {
     body { padding: 0; }
-    * { font-variant-ligatures: none; }
   }
 </style></head><body>
 <div class="doc">
@@ -1142,10 +1138,17 @@ function generarVistaPrevia() {
   document.getElementById('modalImpresion').classList.remove('activo');
   document.getElementById('modalPreview').classList.add('activo');
 }
+
+/* ============================================================
+   Impresión: documento HTML independiente + espera de recursos
+   ------------------------------------------------------------
+   Garantiza texto real, seleccionable, indexable y buscable
+   en el PDF. No se usa canvas, html2canvas ni rasterización.
+   ============================================================ */
 function imprimirDesdePreview() {
   const html = construirInformeHTML();
 
-  // Abrir el informe como documento propio → garantiza texto seleccionable en el PDF
+  // 1) Abrir una pestaña/ventana nueva → documento HTML independiente.
   const ventana = window.open('', '_blank');
   if (!ventana) {
     alert('El navegador bloqueó la ventana emergente.\n\n' +
@@ -1154,26 +1157,70 @@ function imprimirDesdePreview() {
     return;
   }
 
+  // 2) Escribir el informe como documento propio del navegador.
   ventana.document.open();
   ventana.document.write(html);
   ventana.document.close();
 
-  const triggerPrint = () => {
+  // Guardas para evitar doble invocación de window.print()
+  let yaImpreso = false;
+  let recursosEsperados = false;
+
+  const dispararImpresion = () => {
+    if (yaImpreso) return;
+    yaImpreso = true;
     try {
       ventana.focus();
       ventana.print();
     } catch (e) {
-      console.warn('Error al invocar impresión:', e);
+      console.warn('Error al invocar window.print():', e);
     }
   };
 
-  // Esperar a que carguen imagen del logo y fuentes antes de imprimir
+  const esperarRecursosYCargar = () => {
+    if (recursosEsperados) return;
+    recursosEsperados = true;
+
+    const doc = ventana.document;
+
+    // 2.a) Esperar fuentes tipográficas (si el navegador lo soporta)
+    const fuentesListas = (doc.fonts && doc.fonts.ready)
+      ? doc.fonts.ready.catch(() => {})
+      : Promise.resolve();
+
+    // 2.b) Esperar carga de imágenes (logo)
+    const imagenes = Array.from(doc.images || []);
+    const imagenesListas = imagenes.length
+      ? Promise.all(imagenes.map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(res => {
+            img.addEventListener('load',  res, { once: true });
+            img.addEventListener('error', res, { once: true });
+            setTimeout(res, 3000); // resguardo si el evento nunca dispara
+          });
+        }))
+      : Promise.resolve();
+
+    // 2.c) Esperar dos frames de renderizado y lanzar la impresión.
+    Promise.all([fuentesListas, imagenesListas])
+      .then(() => new Promise(res => {
+        if (typeof ventana.requestAnimationFrame === 'function') {
+          ventana.requestAnimationFrame(() => ventana.requestAnimationFrame(res));
+        } else {
+          setTimeout(res, 50);
+        }
+      }))
+      .then(() => setTimeout(dispararImpresion, 150))
+      .catch(() => setTimeout(dispararImpresion, 150));
+  };
+
+  // 3) Esperar a que el documento termine de cargar antes de esperar recursos.
   if (ventana.document.readyState === 'complete') {
-    setTimeout(triggerPrint, 500);
+    esperarRecursosYCargar();
   } else {
-    ventana.addEventListener('load', () => setTimeout(triggerPrint, 500), { once: true });
-    // Respaldo por si el evento load no se dispara
-    setTimeout(triggerPrint, 1500);
+    ventana.addEventListener('load', esperarRecursosYCargar, { once: true });
+    // Respaldo por si 'load' no dispara (ej. imágenes externas bloqueadas)
+    setTimeout(esperarRecursosYCargar, 2500);
   }
 }
 
