@@ -320,6 +320,11 @@ footer { text-align:center; font-size:0.75rem; padding:10px; background: var(--a
             <div class="label">Personal Complementario</div>
             <div class="value" id="kpiPersonal">0 <small>pers.</small></div>
           </div>
+          <!-- NUEVO KPI: Visitantes -->
+          <div class="kpi">
+            <div class="label">Visitantes</div>
+            <div class="value" id="kpiVisitantes">0 <small>pers.</small></div>
+          </div>
         </div>
         <div class="acciones no-print">
           <button class="btn-dorado" onclick="abrirModalImpresion()">🖨 Generar informe / PDF</button>
@@ -823,6 +828,8 @@ function calcular() {
   document.getElementById('kpiPerCapita').innerHTML = fmt(d.perCapita, 1) + ' <small>m²/pers.</small>';
   document.getElementById('kpiFunc').innerHTML      = fmtInt(d.nFuncionarios) + ' <small>pers.</small>';
   document.getElementById('kpiPersonal').innerHTML  = fmtInt(d.nPersonalComplementario) + ' <small>pers.</small>';
+  /* NUEVO: refleja el número de visitantes en el resumen */
+  document.getElementById('kpiVisitantes').innerHTML = fmtInt(d.inp.nVisitantes) + ' <small>pers.</small>';
 
   const tbody = document.getElementById('tbodyResultados');
   tbody.innerHTML = '';
@@ -1072,6 +1079,8 @@ function construirInformeHTML() {
       <div class="kpi"><div class="label">Ocupantes</div><div class="value">${fmtInt(d.totalPersonas)} <small>pers.</small></div></div>
       <div class="kpi"><div class="label">Funcionarios</div><div class="value">${fmtInt(d.nFuncionarios)} <small>pers.</small></div></div>
       <div class="kpi"><div class="label">Personal Complementario</div><div class="value">${fmtInt(d.nPersonalComplementario)} <small>pers.</small></div></div>
+      <!-- NUEVO KPI: Visitantes en resumen ejecutivo -->
+      <div class="kpi"><div class="label">Visitantes</div><div class="value">${fmtInt(d.inp.nVisitantes)} <small>pers.</small></div></div>
       <div class="kpi"><div class="label">Área / persona</div><div class="value">${fmt(d.perCapita,1)} <small>m²/p</small></div></div>
     </div>
   ` : ''}
