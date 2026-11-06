@@ -94,6 +94,7 @@ table.resultados tr.seccion td { background: var(--aya-tinte-dorado); font-weigh
 table.resultados tr.total td { background: var(--aya-azul); color: var(--aya-blanco); font-weight: 700; font-size: 0.95rem; border: none; }
 table.resultados tr.total td:last-child { font-size: 1.05rem; color: var(--aya-dorado-claro); }
 table.resultados tr.mobiliario td { font-size: 0.8rem; color: var(--aya-azul); background: #FAFBFD; }
+table.resultados tr.nota-estac td { background: #FAFBFD; color: var(--aya-gris-texto); font-size: 0.78rem; font-style: italic; font-weight: 400 !important; text-align: left !important; padding: 10px 6px; border-bottom: 1px solid var(--aya-borde); }
 
 .acciones { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
 button.btn-azul { background: var(--aya-azul); color: var(--aya-blanco); border: none; padding: 9px 16px; border-radius: 6px; font-size: 0.88rem; cursor: pointer; transition: background 0.2s; font-family: inherit; }
@@ -301,7 +302,7 @@ footer { text-align:center; font-size:0.75rem; padding:10px; background: var(--a
         <h2><span class="num">∑</span> Resumen</h2>
         <div class="resumen-grid">
           <div class="kpi destacado">
-            <div class="label">Área total requerida</div>
+            <div class="label">Área total requerida <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.65rem;opacity:.85">(sin estacionamiento)</span></div>
             <div class="value" id="kpiTotal">0 <small>m²</small></div>
           </div>
           <div class="kpi">
@@ -320,10 +321,14 @@ footer { text-align:center; font-size:0.75rem; padding:10px; background: var(--a
             <div class="label">Personal Complementario</div>
             <div class="value" id="kpiPersonal">0 <small>pers.</small></div>
           </div>
-          <!-- NUEVO KPI: Visitantes -->
           <div class="kpi">
             <div class="label">Visitantes</div>
             <div class="value" id="kpiVisitantes">0 <small>pers.</small></div>
+          </div>
+          <!-- NUEVO KPI: Estacionamientos (se muestra condicional) -->
+          <div class="kpi" id="kpiEstacCard" style="display:none">
+            <div class="label">Estacionamientos</div>
+            <div class="value" id="kpiEstac" style="font-size:0.95rem;line-height:1.4"></div>
           </div>
         </div>
         <div class="acciones no-print">
@@ -660,10 +665,11 @@ function recopilarDatos() {
   const modulosEspera = inp.nVisitantes > 0 ? Math.ceil(inp.nVisitantes / 3) : 0;
   const aEspera = inp.nVisitantes * 1.4;
 
-  /* Comedor */
+  /* Comedor + Cocineta (se presentan juntos) */
   const capComedor = nFunc > 0 ? Math.ceil(nFunc / 2) * 2 : 0;
   const aComedor   = capComedor * 1.4 * 1.15;
   const aCocineta  = capComedor > 0 ? 4 : 0;
+  const aComedorTotal = aComedor + aCocineta;
 
   /* Lactancia */
   const triggerLactanciaDecreto = inp.nLactancia > 0;
@@ -691,7 +697,7 @@ function recopilarDatos() {
   /* Especiales */
   const aEspeciales = especiales.reduce((s, x) => s + x.total, 0);
 
-  /* Estacionamiento */
+  /* Estacionamiento (informativo · NO suma al área total) */
   let aEstac = 0, estacAcc = 0, estacEstVis = 0;
   const aEstacInst = inp.nEstacInst * 12.5 * 1.3;
   let aEstacVis = 0;
@@ -703,12 +709,13 @@ function recopilarDatos() {
     }
     aEstac = aEstacInst + aEstacVis;
   }
+  const hayEstac = inp.chkEstac && (inp.nEstacInst > 0 || inp.nEstacVis > 0);
 
-  /* Totales */
+  /* Totales — NOTA: el estacionamiento queda fuera del área total requerida */
   const totalInterno = aPuestos + aEspera + aComedor + aCocineta + aLactancia + aSalaInd + aSalaGrup + aBanos + aTI + aAseo + aVigilancia + aEspeciales;
   const circulacion  = totalInterno * 0.10;
-  const totalGeneral = totalInterno + circulacion + aEstac;
-  const perCapita = totalPersonas > 0 ? totalGeneral / totalPersonas : 0;
+  const totalGeneral = totalInterno + circulacion;         /* SIN estacionamiento */
+  const perCapita    = totalPersonas > 0 ? totalGeneral / totalPersonas : 0;
 
   /* Filas */
   const filas = [];
@@ -721,11 +728,19 @@ function recopilarDatos() {
   fila('Oficina', inp.nOficina, 'Escritorio L 1.80×1.20 + 0.80×0.60 m · 12 m² c/u', aOficina);
   fila('Recepción', inp.nRecepcion, 'Mueble L 1.40×1.50 + mostrador · 10 m² c/u', aRecepcion);
 
-  if (aEspera > 0 || aComedor > 0 || aCocineta > 0 || aSalaInd > 0 || aSalaGrup > 0 || aLactancia > 0) {
+  if (aEspera > 0 || aComedorTotal > 0 || aSalaInd > 0 || aSalaGrup > 0 || aLactancia > 0) {
     sec('Áreas comunes');
     fila('Sala de espera', inp.nVisitantes, `${modulosEspera} módulo(s) de 3 sillas · 1.4 m²/pers.`, aEspera);
-    fila('Comedor', 1, `${capComedor} espacios · ${nFunc} funcionarios / 2 tandas → par sup. + 15% circulación`, aComedor);
-    fila('Cocineta (comedor)', capComedor > 0 ? 1 : 0, 'Mueble 2.60×0.60 m + circulación frontal', aCocineta);
+
+    /* Comedor + Cocineta fusionados en una sola línea */
+    if (aComedorTotal > 0) {
+      let comedorDet = `${capComedor} espacios · ${nFunc} funcionarios / 2 tandas → par sup. + 15% circulación`;
+      if (aCocineta > 0) {
+        comedorDet += ` · incluye cocineta ${fmt(aCocineta,1)} m² (mueble 2.60×0.60 m + circulación frontal)`;
+      }
+      fila('Comedor + cocineta', capComedor > 0 ? 1 : 0, comedorDet, aComedorTotal);
+    }
+
     fila('Salas de reunión individuales', inp.nSalasInd, 'Sala 1 persona · 4 m² mín.', aSalaInd);
     fila('Salas de reunión grupales', inp.nSalasGrupCant, `${inp.nSalasGrupCap} pers./sala · 2.5 m² c/u`, aSalaGrup);
     let detLact = '';
@@ -759,16 +774,6 @@ function recopilarDatos() {
     });
   }
 
-  if (aEstac > 0) {
-    sec('Estacionamiento (exterior)');
-    if (inp.nEstacInst > 0) {
-      fila('Institucional', inp.nEstacInst, `${inp.nEstacInst} estándar × 12.5 m² · +30% circulación`, aEstacInst);
-    }
-    if (inp.nEstacVis > 0) {
-      fila('Visitantes', inp.nEstacVis, `${estacAcc} accesible(s) × 16.5 m² + ${estacEstVis} estándar × 12.5 m² · +30% circulación`, aEstacVis);
-    }
-  }
-
   sec('Circulación');
   fila('Circulación general', '—', '10% sobre área interior (pasillos ≥ 1.20 m)', circulacion);
 
@@ -781,7 +786,6 @@ function recopilarDatos() {
   addMob('Estación de recepción (L)', '1.40×1.50 + mostrador 1.40×0.40 m', inp.nRecepcion);
   addMob('Escritorio de vigilancia', `Puesto de seguridad 4 m²`, inp.nVigilancia);
 
-  /* Arturito: 1 por cada plataforma, estación, oficina, recepción y vigilancia */
   addMob('Arturito (gaveta + puerta)', '65 cm alto × 50 cm frente × 50 cm fondo',
     inp.nPlataforma + inp.nEstacion + inp.nOficina + inp.nRecepcion + inp.nVigilancia);
 
@@ -806,13 +810,13 @@ function recopilarDatos() {
     nFunc, nFuncionarios, nPersonalComplementario, totalPersonas,
     aPlataforma, aEstacion, aOficina, aRecepcion, aPuestos,
     modulosEspera, aEspera,
-    capComedor, aComedor, aCocineta,
+    capComedor, aComedor, aCocineta, aComedorTotal,
     lactanciaObligatoria, triggerLactanciaDecreto, triggerLactanciaCIHSE, aLactancia,
     aSalaInd, aSalaGrup,
     ssFunc, ssVis, ssLey, aBanos,
     aTI, aAseo, aVigilancia,
     aEspeciales,
-    aEstac, aEstacInst, aEstacVis, estacAcc, estacEstVis,
+    hayEstac, aEstac, aEstacInst, aEstacVis, estacAcc, estacEstVis,
     totalInterno, circulacion, totalGeneral, perCapita,
     filas, mob
   };
@@ -828,8 +832,19 @@ function calcular() {
   document.getElementById('kpiPerCapita').innerHTML = fmt(d.perCapita, 1) + ' <small>m²/pers.</small>';
   document.getElementById('kpiFunc').innerHTML      = fmtInt(d.nFuncionarios) + ' <small>pers.</small>';
   document.getElementById('kpiPersonal').innerHTML  = fmtInt(d.nPersonalComplementario) + ' <small>pers.</small>';
-  /* NUEVO: refleja el número de visitantes en el resumen */
   document.getElementById('kpiVisitantes').innerHTML = fmtInt(d.inp.nVisitantes) + ' <small>pers.</small>';
+
+  /* KPI Estacionamientos: muestra el conteo de espacios en lugar del área */
+  const cardEstac = document.getElementById('kpiEstacCard');
+  if (d.hayEstac) {
+    cardEstac.style.display = '';
+    const lineas = [];
+    if (d.inp.nEstacInst > 0) lineas.push(`<div>${d.inp.nEstacInst} institucional(es)</div>`);
+    if (d.inp.nEstacVis > 0) lineas.push(`<div>${d.inp.nEstacVis} visitante(s) <small style="color:var(--aya-dorado-oscuro);font-weight:600">(${d.estacAcc} acc. 7600)</small></div>`);
+    document.getElementById('kpiEstac').innerHTML = lineas.join('');
+  } else {
+    cardEstac.style.display = 'none';
+  }
 
   const tbody = document.getElementById('tbodyResultados');
   tbody.innerHTML = '';
@@ -845,14 +860,22 @@ function calcular() {
       tbody.appendChild(tr);
     }
   });
+
+  /* TOTAL ÁREA REQUERIDA — SIN estacionamiento */
   const trT = document.createElement('tr');
   trT.className = 'total';
-  trT.innerHTML = `<td colspan="3">TOTAL ÁREA REQUERIDA</td><td>${fmt(d.totalGeneral, 1)} m²</td>`;
+  trT.innerHTML = `<td colspan="3">TOTAL ÁREA REQUERIDA (sin estacionamiento)</td><td>${fmt(d.totalGeneral, 1)} m²</td>`;
   tbody.appendChild(trT);
-  if (d.aEstac > 0) {
-    const trI = document.createElement('tr');
-    trI.innerHTML = `<td colspan="3" style="font-size:0.78rem;color:var(--aya-gris-texto)">Área interior (sin estacionamiento)</td><td style="font-size:0.82rem;color:var(--aya-gris-texto)">${fmt(d.totalInterno + d.circulacion, 1)} m²</td>`;
-    tbody.appendChild(trI);
+
+  /* NOTA debajo del total: conteo de espacios de estacionamiento */
+  if (d.hayEstac) {
+    const partes = [];
+    if (d.inp.nEstacInst > 0) partes.push(`<b>Institucional:</b> ${d.inp.nEstacInst} espacio(s)`);
+    if (d.inp.nEstacVis > 0) partes.push(`<b>Visitantes:</b> ${d.inp.nEstacVis} espacio(s) — <b>${d.estacAcc}</b> accesible(s) requerido(s) por Ley 7600`);
+    const trNota = document.createElement('tr');
+    trNota.className = 'nota-estac';
+    trNota.innerHTML = `<td colspan="4">📌 Estacionamiento (no incluido en el área total): ${partes.join(' · ')}</td>`;
+    tbody.appendChild(trNota);
   }
 
   const tmob = document.getElementById('tbodyMobiliario');
@@ -934,6 +957,14 @@ function construirInformeHTML() {
   const fecha = new Date().toLocaleString('es-CR', { dateStyle: 'long', timeStyle: 'short' });
   const sizeCSS = cfg.tamano + ' ' + cfg.orientacion;
 
+  /* Bloque informativo de estacionamiento para el PDF */
+  const estacInfo = d.hayEstac
+    ? [
+        d.inp.nEstacInst > 0 ? `<b>Institucional:</b> ${d.inp.nEstacInst} espacio(s)` : '',
+        d.inp.nEstacVis > 0 ? `<b>Visitantes:</b> ${d.inp.nEstacVis} espacio(s) — <b>${d.estacAcc}</b> accesible(s) requerido(s) por Ley 7600` : ''
+      ].filter(Boolean).join(' · ')
+    : '';
+
   return `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><title>Informe de Cálculo de Área · AyA</title>
 <style>
@@ -1006,6 +1037,17 @@ function construirInformeHTML() {
   tr.seccion td { background: #F5F6FA; font-weight: 700; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.5px; color: #1B294E; }
   tr.total td { background: #1B294E; color: #fff; font-weight: 700; font-size: 11px; border: none; }
   tr.total td:last-child { color: #DEC584; font-size: 12px; }
+  tr.nota-estac td {
+    background: #FAFBFD;
+    text-align: left !important;
+    font-weight: 400 !important;
+    font-style: italic;
+    font-size: 9.5px;
+    color: #5B678A;
+    padding: 8px 6px;
+    border-bottom: 1px solid #E0E3EB;
+  }
+  tr.nota-estac b { color: #1B294E; font-style: normal; }
   .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 12px; }
   .kpi { border: 1px solid #E0E3EB; border-radius: 6px; padding: 10px 12px; background: #F5F6FA; }
   .kpi.destacado { background: #1B294E; color: #fff; border-color: #1B294E; }
@@ -1015,6 +1057,7 @@ function construirInformeHTML() {
   .kpi.destacado .value { color: #fff; }
   .kpi .value small { font-size: 10px; font-weight: 500; color: #5B678A; }
   .kpi.destacado .value small { color: #DEC584; }
+  .kpi.estac .value { font-size: 11px; line-height: 1.4; }
   .notas { font-size: 10px; color: #5B678A; line-height: 1.5; background: rgba(201,173,110,.12); border-left: 3px solid #C9AD6E; padding: 10px 14px; border-radius: 4px; margin-top: 14px; }
   .notas b { color: #8B7338; }
   .notas ul { margin: 4px 0 0 0; padding-left: 16px; }
@@ -1065,8 +1108,8 @@ function construirInformeHTML() {
         <tr><td>Funcionarias en lactancia</td><td class="cant">${d.inp.nLactancia}</td><td class="desc">Cualquier valor ≥1 obliga (Decreto 44943)</td></tr>
         <tr><td>Salas individuales</td><td class="cant">${d.inp.nSalasInd}</td><td class="desc">Sala 1 persona · 4 m² mín.</td></tr>
         <tr><td>Salas grupales</td><td class="cant">${d.inp.nSalasGrupCant}</td><td class="desc">${d.inp.nSalasGrupCap} personas por sala</td></tr>
-        <tr><td>Estacionamiento institucional</td><td class="cant">${d.inp.chkEstac ? d.inp.nEstacInst : 0}</td><td class="desc">12.5 m² c/u</td></tr>
-        <tr><td>Estacionamiento visitantes</td><td class="cant">${d.inp.chkEstac ? d.inp.nEstacVis : 0}</td><td class="desc">Accesible máx(2, 5%) · solo visitantes</td></tr>
+        <tr><td>Estacionamiento institucional</td><td class="cant">${d.inp.chkEstac ? d.inp.nEstacInst : 0}</td><td class="desc">12.5 m² c/u · informativo</td></tr>
+        <tr><td>Estacionamiento visitantes</td><td class="cant">${d.inp.chkEstac ? d.inp.nEstacVis : 0}</td><td class="desc">Accesible máx(2, 5%) · solo visitantes · informativo</td></tr>
         <tr><td>Ubicado en Centro Comercial</td><td class="cant">${d.inp.esCentroComercial ? 'Sí' : 'No'}</td><td class="desc">${d.inp.esCentroComercial ? 'Exime SS Ley 7600' : 'Requiere SS Ley 7600'}</td></tr>
       </tbody>
     </table>
@@ -1075,13 +1118,17 @@ function construirInformeHTML() {
   ${cfg.incluirResumen ? `
     <h2 class="seccion">2. Resumen ejecutivo</h2>
     <div class="kpis">
-      <div class="kpi destacado"><div class="label">Área total</div><div class="value">${fmt(d.totalGeneral,1)} <small>m²</small></div></div>
+      <div class="kpi destacado"><div class="label">Área total (sin estac.)</div><div class="value">${fmt(d.totalGeneral,1)} <small>m²</small></div></div>
       <div class="kpi"><div class="label">Ocupantes</div><div class="value">${fmtInt(d.totalPersonas)} <small>pers.</small></div></div>
       <div class="kpi"><div class="label">Funcionarios</div><div class="value">${fmtInt(d.nFuncionarios)} <small>pers.</small></div></div>
       <div class="kpi"><div class="label">Personal Complementario</div><div class="value">${fmtInt(d.nPersonalComplementario)} <small>pers.</small></div></div>
-      <!-- NUEVO KPI: Visitantes en resumen ejecutivo -->
       <div class="kpi"><div class="label">Visitantes</div><div class="value">${fmtInt(d.inp.nVisitantes)} <small>pers.</small></div></div>
       <div class="kpi"><div class="label">Área / persona</div><div class="value">${fmt(d.perCapita,1)} <small>m²/p</small></div></div>
+      ${d.hayEstac ? `
+        <div class="kpi estac"><div class="label">Estacionamientos</div><div class="value">
+          ${d.inp.nEstacInst > 0 ? `${d.inp.nEstacInst} inst.` : ''}${d.inp.nEstacInst > 0 && d.inp.nEstacVis > 0 ? ' · ' : ''}${d.inp.nEstacVis > 0 ? `${d.inp.nEstacVis} vis. (${d.estacAcc} acc.)` : ''}
+        </div></div>
+      ` : ''}
     </div>
   ` : ''}
 
@@ -1094,7 +1141,8 @@ function construirInformeHTML() {
           ? `<tr class="seccion"><td colspan="4">${esc(f.nombre)}</td></tr>`
           : `<tr><td>${esc(f.area)}</td><td class="cant">${esc(String(f.cant))}</td><td class="desc">${f.detalle}</td><td>${fmt(f.valor,1)} m²</td></tr>`
         ).join('')}
-        <tr class="total"><td colspan="3">TOTAL ÁREA REQUERIDA</td><td>${fmt(d.totalGeneral,1)} m²</td></tr>
+        <tr class="total"><td colspan="3">TOTAL ÁREA REQUERIDA (sin estacionamiento)</td><td>${fmt(d.totalGeneral,1)} m²</td></tr>
+        ${d.hayEstac ? `<tr class="nota-estac"><td colspan="4">📌 Estacionamiento (no incluido en el área total): ${estacInfo}</td></tr>` : ''}
       </tbody>
     </table>
   ` : ''}
@@ -1150,14 +1198,10 @@ function generarVistaPrevia() {
 
 /* ============================================================
    Impresión: documento HTML independiente + espera de recursos
-   ------------------------------------------------------------
-   Garantiza texto real, seleccionable, indexable y buscable
-   en el PDF. No se usa canvas, html2canvas ni rasterización.
    ============================================================ */
 function imprimirDesdePreview() {
   const html = construirInformeHTML();
 
-  // 1) Abrir una pestaña/ventana nueva → documento HTML independiente.
   const ventana = window.open('', '_blank');
   if (!ventana) {
     alert('El navegador bloqueó la ventana emergente.\n\n' +
@@ -1166,12 +1210,10 @@ function imprimirDesdePreview() {
     return;
   }
 
-  // 2) Escribir el informe como documento propio del navegador.
   ventana.document.open();
   ventana.document.write(html);
   ventana.document.close();
 
-  // Guardas para evitar doble invocación de window.print()
   let yaImpreso = false;
   let recursosEsperados = false;
 
@@ -1191,13 +1233,10 @@ function imprimirDesdePreview() {
     recursosEsperados = true;
 
     const doc = ventana.document;
-
-    // 2.a) Esperar fuentes tipográficas (si el navegador lo soporta)
     const fuentesListas = (doc.fonts && doc.fonts.ready)
       ? doc.fonts.ready.catch(() => {})
       : Promise.resolve();
 
-    // 2.b) Esperar carga de imágenes (logo)
     const imagenes = Array.from(doc.images || []);
     const imagenesListas = imagenes.length
       ? Promise.all(imagenes.map(img => {
@@ -1205,12 +1244,11 @@ function imprimirDesdePreview() {
           return new Promise(res => {
             img.addEventListener('load',  res, { once: true });
             img.addEventListener('error', res, { once: true });
-            setTimeout(res, 3000); // resguardo si el evento nunca dispara
+            setTimeout(res, 3000);
           });
         }))
       : Promise.resolve();
 
-    // 2.c) Esperar dos frames de renderizado y lanzar la impresión.
     Promise.all([fuentesListas, imagenesListas])
       .then(() => new Promise(res => {
         if (typeof ventana.requestAnimationFrame === 'function') {
@@ -1223,12 +1261,10 @@ function imprimirDesdePreview() {
       .catch(() => setTimeout(dispararImpresion, 150));
   };
 
-  // 3) Esperar a que el documento termine de cargar antes de esperar recursos.
   if (ventana.document.readyState === 'complete') {
     esperarRecursosYCargar();
   } else {
     ventana.addEventListener('load', esperarRecursosYCargar, { once: true });
-    // Respaldo por si 'load' no dispara (ej. imágenes externas bloqueadas)
     setTimeout(esperarRecursosYCargar, 2500);
   }
 }
