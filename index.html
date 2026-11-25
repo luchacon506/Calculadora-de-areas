@@ -1276,65 +1276,6 @@ function construirInformeHTML() {
   </div>
 </div>
 
-<script id="pwa-install-logic">
-(() => {
-  const installButton = document.getElementById('btnInstalarApp');
-  if (!installButton) return;
-
-  let deferredPrompt = null;
-  const isStandalone = () =>
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.navigator.standalone === true;
-
-  if (isStandalone()) installButton.hidden = true;
-
-  window.addEventListener('beforeinstallprompt', (event) => {
-    event.preventDefault();
-    deferredPrompt = event;
-    installButton.hidden = false;
-  });
-
-  window.addEventListener('appinstalled', () => {
-    deferredPrompt = null;
-    installButton.hidden = true;
-    alert('La aplicación quedó instalada en este dispositivo.');
-  });
-
-  installButton.addEventListener('click', async () => {
-    if (isStandalone()) {
-      alert('La aplicación ya está instalada y abierta en modo aplicación.');
-      return;
-    }
-
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const result = await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      if (result && result.outcome === 'accepted') installButton.hidden = true;
-      return;
-    }
-
-    const ua = navigator.userAgent || '';
-    const isIOS = /iPad|iPhone|iPod/.test(ua) ||
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-    if (isIOS) {
-      alert('Para instalar en iPhone o iPad:\\n1. Abra esta página en Safari.\\n2. Toque Compartir.\\n3. Seleccione “Agregar a pantalla de inicio”.\\n4. Confirme con “Agregar”.');
-    } else {
-      alert('Para instalar en este equipo:\\n\\n• Chrome o Edge: abra el menú del navegador y seleccione “Instalar Calculadora de Área” o “Instalar aplicación”.\\n• En Android: use el menú ⋮ y seleccione “Instalar aplicación” o “Agregar a pantalla de inicio”.\\n\\nSi la opción no aparece, confirme que el sitio esté publicado mediante HTTPS.');
-    }
-  });
-
-  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch((error) => {
-        console.warn('No se pudo registrar el modo sin conexión:', error);
-      });
-    });
-  }
-})();
-</script>
-
 </body></html>`;
 }
 
@@ -1431,6 +1372,64 @@ document.getElementById('modalPreview').addEventListener('click', e => {
 
 toggleEstac();
 calcular();
+</script>
+<script id="pwa-install-logic">
+(() => {
+  const installButton = document.getElementById('btnInstalarApp');
+  if (!installButton) return;
+
+  let deferredPrompt = null;
+  const isStandalone = () =>
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+
+  if (isStandalone()) installButton.hidden = true;
+
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredPrompt = event;
+    installButton.hidden = false;
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    installButton.hidden = true;
+    alert('La aplicación quedó instalada en este dispositivo.');
+  });
+
+  installButton.addEventListener('click', async () => {
+    if (isStandalone()) {
+      alert('La aplicación ya está instalada y abierta en modo aplicación.');
+      return;
+    }
+
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const result = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      if (result && result.outcome === 'accepted') installButton.hidden = true;
+      return;
+    }
+
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPad|iPhone|iPod/.test(ua) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    if (isIOS) {
+      alert('Para instalar en iPhone o iPad:\n1. Abra esta página en Safari.\n2. Toque Compartir.\n3. Seleccione “Agregar a pantalla de inicio”.\n4. Confirme con “Agregar”.');
+    } else {
+      alert('Para instalar en este equipo:\n\n• Chrome o Edge: abra el menú del navegador y seleccione “Instalar Calculadora de Área” o “Instalar aplicación”.\n• En Android: use el menú ⋮ y seleccione “Instalar aplicación” o “Agregar a pantalla de inicio”.\n\nSi la opción no aparece, confirme que el sitio esté publicado mediante HTTPS.');
+    }
+  });
+
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch((error) => {
+        console.warn('No se pudo registrar el modo sin conexión:', error);
+      });
+    });
+  }
+})();
 </script>
 </body>
 </html>
